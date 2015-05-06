@@ -4,8 +4,6 @@
 		this.type =		'fit'; //border, vert, hor, anchor, card, 
 		this.width = 	this.width() 	|| options.width;
 		this.height = 	this.height() 	|| options.height;
-		this.padding = 	this.padding() 	|| options.padding;
-		this.margin = 	this.margin() 	|| options.margin;
 		this.items = 	null 			|| options.items;
 		this.verAlign = 0				|| options.verAlign;
 		this.horAlign = 0				|| options.horAlign;
