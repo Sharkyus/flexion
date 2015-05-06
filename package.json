@@ -1,6 +1,7 @@
 {
  	"devDependencies": {
-	    "grunt-ngdocs": "*"
+	    "grunt-ngdocs": "*",
+	    "bower": "*"
 	}
 }
  
