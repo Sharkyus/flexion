@@ -86,7 +86,8 @@
 
 	var Layout = function(el, options) {
 		options = options || {};
-		options.id = Layout.genId();
+		this.customId = (options.id) ? true : false;
+		options.id = options.id || Layout.genId();
 
 		this.isLayout = true;
 		this.type = Layout.TYPE.HORIZONTAL;
@@ -158,6 +159,7 @@
 				this.el.append(this.items ? '' : this.html);
 				if (this.cls) this.el.addClass(this.cls); 
 				this.el.attr('data-layoutId', this.id);
+				if (this.customId) {this.el.attr('id', this.id);}
 				this.el.css({
 					position: 'absolute',
 					//display: 'block',
