@@ -188,11 +188,11 @@
 		//other layouts or html
 		this.add = function(items, options) {
 			if (!items || ($.isArray(items) && !items.length)) return;
+			this.clearData();
 			//console.log('111', items.length)
 			options = options || {};
 			items = $.isArray(items) ? items : [items];
 			this.items = items;	
-			this.calculateAllFlex(this.items);
 			for (var i in this.items) {
 				var item = this.items[i];
 				if(!item.isLayout) {
@@ -207,6 +207,7 @@
 
 				this.distribute(item);
 			};
+			this.calculateAllFlex(this.items);
 
 			if (options.silent || this._detached) return; 
 
@@ -214,19 +215,8 @@
 		};
 
 		this.distributeSizes = function() {
-			this._allFixedSummary = 0;
-			this._allDynamicSummary = 0;
-			this._allPercentsSummary = 0;
-			this._allFlexSummary = 0;
-			//console.log(['123'], this.cls)
-			this.sizesMap = {
-				flex: [],
-				perc: [],
-				fixed: [],
-				dynamic: []
-			}; 
+			this.clearData();
 
-			this.calcMap = [];
 			this.calculateAllFlex(this.items);
 			for (var i in this.items) {
 				var item = this.items[i];
@@ -244,10 +234,26 @@
 			}
 		};
 
+		this.clearData = function() {
+			this._allFixedSummary = 0;
+			this._allDynamicSummary = 0;
+			this._allPercentsSummary = 0;
+			this._allFlexSummary = 0;
+
+			this.sizesMap = {
+				flex: [],
+				perc: [],
+				fixed: [],
+				dynamic: []
+			}; 
+
+			this.calcMap = [];
+		}
+
 		this.calculateAllFlex = function(items) {
 			for (var i in items) {
 				var item = items[i];
-				if (item.flex)
+				if (item.flex && item.getEl().is(':visible'))
 					this._allFlexSummary += item.flex;
 			}
 		};
@@ -477,7 +483,7 @@
 				this.getEl().css({
 					position: 'fixed'
 				});
-				var w = this.getEl().width() + 'px';
+				var w = this.getEl().width() + 1 + 'px';
 				var h = this.getEl().height() + 'px';
 				this.getEl().css({
 					position: 'absolute'
