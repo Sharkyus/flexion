@@ -1,9 +1,9 @@
 (function($) {
 	$.fn['flexion'] = function(options) {
-		/*if (typeof options == 'string') {
+		if (typeof options == 'string') {
 			var method = options;
 			return $.fn['flexion'][method](this);
-		}*/
+		}
 
 		options = options || {};
 		this.type =		'fit'; //border, vert, hor, anchor, card, 
@@ -58,10 +58,10 @@
 
 	$.fn['flexion'].get = function(el) {
 		var cmpId = el.attr('data-layoutid');
-/*
+
 		if (!cmpId) {
 			cmpId = el.find('> div[data-layoutid]').attr('data-layoutid');	
-		}*/
+		}
 		if (!cmpId) return null;
 		return $.fn['flexion'].map[cmpId]; 	
 	};
