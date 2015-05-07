@@ -1,5 +1,10 @@
 (function($) {
 	$.fn['flexion'] = function(options) {
+		/*if (typeof options == 'string') {
+			var method = options;
+			return $.fn['flexion'][method](this);
+		}*/
+
 		options = options || {};
 		this.type =		'fit'; //border, vert, hor, anchor, card, 
 		this.width = 	this.width() 	|| options.width;
@@ -10,7 +15,7 @@
 
 		this.init = function(options) {
 			if (!$.fn['flexion'].map) $.fn['flexion'].map = {};
-			var cmp = $.fn['flexion'].getComponent(this);
+			var cmp = $.fn['flexion'].get(this);
 
 			if (!cmp) {
 				this.initLayout(options);
@@ -51,8 +56,12 @@
 		this.init(options);
 	}
 
-	$.fn['flexion'].getComponent = function(el) {
-		var cmpId = el.attr('data-layoutId');
+	$.fn['flexion'].get = function(el) {
+		var cmpId = el.attr('data-layoutid');
+/*
+		if (!cmpId) {
+			cmpId = el.find('> div[data-layoutid]').attr('data-layoutid');	
+		}*/
 		if (!cmpId) return null;
 		return $.fn['flexion'].map[cmpId]; 	
 	};
@@ -330,7 +339,7 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.distribute = function(item) {
-						//console.log(['distribute'], this.cls, item.cls);
+						console.log(['distribute'], this.cls, item.cls);
 						if (!(item.width || item.flex)) {
 							this.sizesMap['dynamic'].push(item);	
 							var width = item.getEl().width();
@@ -339,7 +348,7 @@
 
 							if (this.sizeType == Layout.SIZE.DYNAMIC) {
 								this._allDynamicSummary += width;
-								this.getEl().css('width', this._allDynamicSummary + 'px');
+								this.getEl().css('width', this._allFixedSummary + 'px');
 							}
 							//console.log(width);
 							return;
