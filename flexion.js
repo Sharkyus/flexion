@@ -216,9 +216,9 @@
 				}
 				this.items[i] = item;
 
-				this.distribute(item);
+				//this.distribute(item);
 			};
-			this.calculateAllFlex(this.items);
+			//this.calculateAllFlex(this.items);
 
 			if (options.silent || this._detached) return; 
 
@@ -230,18 +230,27 @@
 
 			this.calculateAllFlex(this.items);
 			for (var i in this.items) {
-				var item = this.items[i];
+				var item = this.items[i]; 
+
+				item.updateVisibility();
 				if (!(item.getEl().is(':visible') || item.fixed)) {
 					this.sizesMap['fixed'].push(item);
 					this.calcMap.push([0, 0]);
 					continue;
 				} 
-				//console.log(item);
 				if (item.isLayout) {
 					item.distributeSizes();
 				}
-
 				this.distribute(item);
+			}
+		};
+
+		this.updateVisibility = function() {
+			if (!this.getEl().children().length) return;
+			if (this.getEl().find('>:visible').length) {
+				this.getEl().css('display', 'block');
+			} else {
+				this.getEl().css('display', 'none');
 			}
 		};
 
@@ -339,7 +348,7 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.distribute = function(item) {
-						console.log(['distribute'], this.cls, item.cls);
+						//console.log(['distribute'], this.cls, item.cls);
 						if (!(item.width || item.flex)) {
 							this.sizesMap['dynamic'].push(item);	
 							var width = item.getEl().width();
