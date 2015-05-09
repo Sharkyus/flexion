@@ -7,8 +7,8 @@
 
 		options = options || {};
 		this.type =		'fit'; //border, vert, hor, anchor, card, 
-		this.width = 	this.width() 	|| options.width;
-		this.height = 	this.height() 	|| options.height;
+		this.width = 	this.outerWidth() 	|| options.width;
+		this.height = 	this.outerHeight() 	|| options.height;
 		this.items = 	null 			|| options.items;
 		this.verAlign = 0				|| options.verAlign;
 		this.horAlign = 0				|| options.horAlign;
@@ -245,10 +245,10 @@
 			this.clearData();
 
 			if (this.isParentHorizontal() || this.isDynamic() || this.isFlex()) {
-				this.getEl().css({ width: ''  }).css({ width:  this.getEl().width()  + 1 });
+				this.getEl().css({ width: ''  }).css({ width:  this.getEl().outerWidth()  + 1 });
 			}
-			if (this.isParentVertical() || this.isDynamic() || this.isFlex()) {
-				this.getEl().css({ height: '' }).css({ height: this.getEl().height() + 1 });
+			if (this.isParentVertical()   || this.isDynamic() || this.isFlex()) {
+				this.getEl().css({ height: '' }).css({ height: this.getEl().outerHeight() + 1 });
 			}
 			//console.log(this.items);
 			this.calculateAllFlex(this.items);
@@ -317,7 +317,7 @@
 		};
 
 		this.getHeight = function() {
-			return this.height || this.getEl().height();
+			return this.height || this.getEl().outerHeight();
 		};
 
 		this.setHeight = function(v) {
@@ -349,7 +349,7 @@
 						//console.log(['dist'], this.cls, item.cls);
 						if (!(item.height || item.flex)) {
 							this.sizesMap['dynamic'].push(item);	
-							var height = item.getEl().height();
+							var height = item.getEl().outerHeight();
 							this.calcMap.push([height, Layout.SIZE.DYNAMIC]);
 							this._allFixedSummary += height;
 
@@ -380,15 +380,15 @@
 					};
 
 					this.calculateHorizontal = function(items) {
-						var cntWidth = this.getEl().width() * this.anchor;	
+						var cntWidth = this.getEl().outerWidth() * this.anchor;	
 
 						for (var i in this.items) {
 							var item = this.items[i];
-						    if (!this.isWidthFixed() && (item.getEl().width() > this.getEl().width())) {
-								this.setWidth(item.width || item.getEl().width());
+						    if (!this.isWidthFixed() && (item.getEl().outerWidth() > this.getEl().outerWidth())) {
+								this.setWidth(item.width || item.getEl().outerWidth());
 							}
 						    item.getEl().css({
-						    	left: cntWidth - item.getEl().width() * this.anchor + 'px'
+						    	left: cntWidth - item.getEl().outerWidth() * this.anchor + 'px'
 						    });
 						}
 					}
@@ -399,7 +399,7 @@
 						//console.log(['distribute'], this.cls, item.cls);
 						if (!(item.width || item.flex)) {
 							this.sizesMap['dynamic'].push(item);	
-							var width = item.getEl().width();
+							var width = item.getEl().outerWidth();
 							this.calcMap.push([width, Layout.SIZE.DYNAMIC]);
 							this._allFixedSummary += width;
 
@@ -429,7 +429,7 @@
 					};
 
 					this.calculateHorizontal = function() {
-						var cntWidth = this.getEl().width();
+						var cntWidth = this.getEl().outerWidth();
 
 						var calcWidth = this._allFixedSummary + this._allPercentsSummary/100 * cntWidth;
 						var horAnchor = 0;
@@ -468,7 +468,7 @@
 			switch(type) {
 				case Layout.TYPE.VERTICAL: {
 					this.calculateVertical = function() {
-						var cntHeight = this.getEl().height();
+						var cntHeight = this.getEl().outerHeight();
 
 						var calcHeight = this._allFixedSummary + this._allPercentsSummary/100 * cntHeight;
 						var verAnchor = 0;
@@ -497,15 +497,15 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.calculateVertical = function() {
-						var cntHeight = this.getEl().height() * this.anchor;	
+						var cntHeight = this.getEl().outerHeight() * this.anchor;	
 
 						for (var i in this.items) {
 							var item = this.items[i];
-						    if (!this.isHeightFixed() && (item.getEl().height() > this.getEl().height())) {
-								this.setHeight(item.height || item.getEl().height());
+						    if (!this.isHeightFixed() && (item.getEl().outerHeight() > this.getEl().outerHeight())) {
+								this.setHeight(item.height || item.getEl().outerHeight());
 							}
 						    item.getEl().css({
-						    	top: cntHeight - item.getEl().height() * this.anchor + 'px'
+						    	top: cntHeight - item.getEl().outerHeight() * this.anchor + 'px'
 						    });
 						}
 					}
@@ -552,8 +552,8 @@
 					this.getEl().css({
 						position: 'fixed'
 					});
-					var w = this.getEl().width() + 1 + 'px';
-					var h = this.getEl().height() + 'px';
+					var w = this.getEl().outerWidth() + 1 + 'px';
+					var h = this.getEl().outerHeight() + 'px';
 
 					this.getEl().css({
 						position: 'absolute'
@@ -570,8 +570,8 @@
 					this.getEl().css({
 						position: 'fixed'
 					});
-					var w = this.getEl().width() + 'px';
-					var h = this.getEl().height() + 1 + 'px';
+					var w = this.getEl().outerWidth() + 'px';
+					var h = this.getEl().outerHeight() + 1 + 'px';
 
 					this.getEl().css({
 						position: 'absolute'
@@ -584,7 +584,7 @@
 			}*/
 			
 
-			//console.log($(this.getEl()).width(), $(this.getEl()).attr('style'), 'add ', this.cls, ' to ', $(el).width(), el, $(el).attr('style'));
+			//console.log($(this.getEl()).outerWidth(), $(this.getEl()).attr('style'), 'add ', this.cls, ' to ', $(el).outerWidth(), el, $(el).attr('style'));
 			this._detached = false;
 		} else this._detached = true;
 
