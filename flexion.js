@@ -175,24 +175,33 @@
 					height: this.height,
 					width: this.width
 				});
-			}
+			} 
 
 			return this.el;
 		};
 
 		this.doLayout = function(options) {
-			if (!this.items || this._detached) return;
+			//console.log(this.cls)
 			options = options || {};
+
+			if (this._inited && this.parent && this.sizeType == Layout.SIZE.DYNAMIC && !options.chainCall) {			
+				this.parent.doLayout(options);
+				return;
+			}
+
+			if (!this.items || this._detached) return;
 			if (!options.withoutResize) this.distributeSizes();
-			//console.log(['--- do layout'], this.cls);
 
 			this.calculateHorizontal();
 			this.calculateVertical();
 
-			if (options.notChaining) true;
+			if(options.notChaining) return;
+
 			for (var i in this.items) {
 				var item = this.items[i];
-				item.doLayout({withoutResize: options.withoutResize});
+				if (item._inited) {
+					item.doLayout({withoutResize: options.withoutResize, chainCall: true});
+				}
 			}
 		};
 
@@ -207,9 +216,8 @@
 			for (var i in this.items) {
 				var item = this.items[i];
 				if(!item.isLayout) {
-					var options = item;
-					options.parent = this;
-					item = new Layout(this.getEl(), options);
+					item.parent = this;
+					item = new Layout(this.getEl(), item);
 				} else {
 					item.parent = this;
 					item.reinit(this.getEl());
@@ -220,14 +228,25 @@
 			};
 			//this.calculateAllFlex(this.items);
 
-			if (options.silent || this._detached) return; 
+			if (this._detached) return; 
 
-			this.doLayout();
+			this.doLayout(options);
 		};
 
 		this.distributeSizes = function() {
 			this.clearData();
 
+			if (this.sizeType == Layout.SIZE.DYNAMIC || this.sizeType == Layout.SIZE.FLEX) {
+				this.getEl().css({
+					width: '',
+					//height: ''
+				});	
+				this.getEl().css({
+					width: this.getEl().width() + 1,
+					//height: ''
+				});	
+			}
+			//console.log(this.items);
 			this.calculateAllFlex(this.items);
 			for (var i in this.items) {
 				var item = this.items[i]; 
@@ -453,12 +472,12 @@
 
 						for (var i in this.items) {
 							var item = this.items[i];
-						    item.getEl().css({
-						    	top: cntHeight - item.getEl().height() * this.anchor + 'px'
-						    });
 						    if (!this.isHeightFixed() && (item.getEl().height() > this.getEl().height())) {
 								this.setHeight(item.height || item.getEl().height());
 							}
+						    item.getEl().css({
+						    	top: cntHeight - item.getEl().height() * this.anchor + 'px'
+						    });
 						}
 					}
 					break;
@@ -525,7 +544,7 @@
 				this.sizeType = Layout.SIZE.PERCENT;
 			}
 		} else if (this.parent && this.parent.type == Layout.TYPE.VERTICAL && this.height) {
-			if (this.height && (typeof this.height == 'number' || this.width.toString().match('px'))) {
+			if (this.height && (typeof this.height == 'number' || this.height.toString().match('px'))) {
 				this.sizeType = Layout.SIZE.FIXED;
 			} else if (this.height) {
 				this.sizeType = Layout.SIZE.PERCENT;
@@ -538,17 +557,14 @@
 
 		//console.log(['------------=========----------'], this.sizeType);
 
-		this._heightFixed = (this.height || (this.getEl().css('height') && this.getEl().css('height') != '0px') || this.flex) ? true : false;
-		this._widthFixed  = (this.width  || (this.getEl().css('width')  && this.getEl().css('width')  != '0px') || this.flex) ? true : false;
+		this._heightFixed = (this.height || (this.getEl().css('height') && this.getEl().css('height') != '0px')/* || this.flex*/) ? true : false;
+		this._widthFixed  = (this.width  || (this.getEl().css('width')  && this.getEl().css('width')  != '0px')/* || this.flex*/) ? true : false;
 		//console.log('----------', this.id, this._widthFixed);
 		
-		this.add(this.items);
+		//console.log('init-- ', this.cls);
+		this.add(this.items, {notChaining: true});
 		this._inited = true;
 
-		if (this.items) {
-			//console.log(this.sizesMap);
-			//console.log(this.calcMap);
-		}
 		return this;
 	};
 
