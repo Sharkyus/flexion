@@ -233,18 +233,22 @@
 			this.doLayout(options);
 		};
 
+		this.isParentHorizontal = function() { return this.parent && this.parent.type == Layout.TYPE.HORIZONTAL; };
+		this.isParentVertical = function()   { return this.parent && this.parent.type == Layout.TYPE.VERTICAL;	 };
+
+		this.isDynamic = function() { return this.sizeType == Layout.SIZE.DYNAMIC;	};
+		this.isFlex    = function() { return this.sizeType == Layout.SIZE.FLEX;     };
+		this.isFixed   = function() { return; };
+		this.isPercent = function() { return; };
+
 		this.distributeSizes = function() {
 			this.clearData();
 
-			if (this.sizeType == Layout.SIZE.DYNAMIC || this.sizeType == Layout.SIZE.FLEX) {
-				this.getEl().css({
-					width: '',
-					//height: ''
-				});	
-				this.getEl().css({
-					width: this.getEl().width() + 1,
-					//height: ''
-				});	
+			if (this.isParentHorizontal() || this.isDynamic() || this.isFlex()) {
+				this.getEl().css({ width: ''  }).css({ width:  this.getEl().width()  + 1 });
+			}
+			if (this.isParentVertical() || this.isDynamic() || this.isFlex()) {
+				this.getEl().css({ height: '' }).css({ height: this.getEl().height() + 1 });
 			}
 			//console.log(this.items);
 			this.calculateAllFlex(this.items);
@@ -320,6 +324,10 @@
 			this.height = v;
 			this.getEl().css({height: v});		
 		};
+		this.setWidth = function(v) {
+			this.width = v;
+			this.getEl().css({width: v});		
+		};
 
 		this.isHeightFixed = function() {
 			return this._heightFixed;
@@ -339,7 +347,18 @@
 					this.distribute = function(item) {
 						
 						//console.log(['dist'], this.cls, item.cls);
-						if (item.height && (typeof item.height == 'number' || item.height.toString().match('px'))) {
+						if (!(item.height || item.flex)) {
+							this.sizesMap['dynamic'].push(item);	
+							var height = item.getEl().height();
+							this.calcMap.push([height, Layout.SIZE.DYNAMIC]);
+							this._allFixedSummary += height;
+
+							if (this.sizeType == Layout.SIZE.DYNAMIC) {
+								this._allDynamicSummary += height;
+								this.getEl().css('height', this._allFixedSummary + 'px');
+							}
+							return;
+						} else if (item.height && (typeof item.height == 'number' || item.height.toString().match('px'))) {
 							this.sizesMap['fixed'].push(item);
 							var height = parseInt(item.height);
 							this.calcMap.push([height, Layout.SIZE.FIXED]);
@@ -361,8 +380,18 @@
 					};
 
 					this.calculateHorizontal = function(items) {
+						var cntWidth = this.getEl().width() * this.anchor;	
 
-					};
+						for (var i in this.items) {
+							var item = this.items[i];
+						    if (!this.isWidthFixed() && (item.getEl().width() > this.getEl().width())) {
+								this.setWidth(item.width || item.getEl().width());
+							}
+						    item.getEl().css({
+						    	left: cntWidth - item.getEl().width() * this.anchor + 'px'
+						    });
+						}
+					}
 					break;
 				}
 				case Layout.TYPE.HORIZONTAL: {
@@ -378,7 +407,6 @@
 								this._allDynamicSummary += width;
 								this.getEl().css('width', this._allFixedSummary + 'px');
 							}
-							//console.log(width);
 							return;
 						} else if (item.width && (typeof item.width == 'number' || item.width.toString().match('px'))) {
 							this.sizesMap['fixed'].push(item);
@@ -401,7 +429,6 @@
 					};
 
 					this.calculateHorizontal = function() {
-						//console.log(['calculate'], this.cls);
 						var cntWidth = this.getEl().width();
 
 						var calcWidth = this._allFixedSummary + this._allPercentsSummary/100 * cntWidth;
@@ -451,6 +478,8 @@
 								wVal = this.calcMap[i][0],
 								wType = this.calcMap[i][1] == 1 ? '%' : 'px';
 							if (this.calcMap[i][1] == Layout.SIZE.FLEX && flexHeight > 0) wVal *= flexHeight;
+
+							if (wVal == 0) continue;
 
 							item.getEl().css({
 								height: wVal + wType,
@@ -517,21 +546,43 @@
 		if (el) {
 			var v = this.getEl();
 			$(el).append(v);
-			if (!(this.width || this.flex)) {
-				this.sizeType = Layout.SIZE.DYNAMIC;
-				this.getEl().css({
-					position: 'fixed'
-				});
-				var w = this.getEl().width() + 1 + 'px';
-				var h = this.getEl().height() + 'px';
-				this.getEl().css({
-					position: 'absolute'
-				});
-				this.getEl().css({
-					width: w,
-					height: h
-				});
+			if (this.isParentHorizontal()) {
+				if (!(this.width || this.flex)) {
+					this.sizeType = Layout.SIZE.DYNAMIC;
+					this.getEl().css({
+						position: 'fixed'
+					});
+					var w = this.getEl().width() + 1 + 'px';
+					var h = this.getEl().height() + 'px';
+
+					this.getEl().css({
+						position: 'absolute'
+					});
+					this.getEl().css({
+						width: w,
+						height: h
+					});
+				}
 			}
+			/*if (this.isParentVertical()) {
+				if (!(this.height || this.flex)) {
+					this.sizeType = Layout.SIZE.DYNAMIC;
+					this.getEl().css({
+						position: 'fixed'
+					});
+					var w = this.getEl().width() + 'px';
+					var h = this.getEl().height() + 1 + 'px';
+
+					this.getEl().css({
+						position: 'absolute'
+					});
+					this.getEl().css({
+						width: w,
+						height: h
+					});
+				}
+			}*/
+			
 
 			//console.log($(this.getEl()).width(), $(this.getEl()).attr('style'), 'add ', this.cls, ' to ', $(el).width(), el, $(el).attr('style'));
 			this._detached = false;
