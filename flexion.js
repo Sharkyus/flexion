@@ -244,10 +244,10 @@
 		this.distributeSizes = function() {
 			this.clearData();
 
-			if (this.isParentHorizontal() || this.isDynamic() || this.isFlex()) {
+			if (this.isParentHorizontal() && (this.isDynamic() || this.isFlex())) {
 				this.getEl().css({ width: ''  }).css({ width:  this.getEl().outerWidth()  + 1 });
 			}
-			if (this.isParentVertical()   || this.isDynamic() || this.isFlex()) {
+			if (this.isParentVertical()   && (this.isDynamic() || this.isFlex())) {
 				this.getEl().css({ height: '' }).css({ height: this.getEl().outerHeight() + 1 });
 			}
 			//console.log(this.items);
@@ -564,7 +564,7 @@
 					});
 				}
 			}
-			/*if (this.isParentVertical()) {
+			if (this.isParentVertical()) {
 				if (!(this.height || this.flex)) {
 					this.sizeType = Layout.SIZE.DYNAMIC;
 					this.getEl().css({
@@ -581,7 +581,7 @@
 						height: h
 					});
 				}
-			}*/
+			}
 			
 
 			//console.log($(this.getEl()).outerWidth(), $(this.getEl()).attr('style'), 'add ', this.cls, ' to ', $(el).outerWidth(), el, $(el).attr('style'));
