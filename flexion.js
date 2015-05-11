@@ -274,7 +274,7 @@
 			/*if (this.isParentHorizontal() && (this.isDynamic() || this.isFlex())) {
 				this.getEl().css({ width: ''  })
 
-				//// console.log('    %cset width -- ' + (this.getEl().outerWidth()  + 1) + 'px -- ' + this.cls, 'background: #2196F3; color: white');
+				console.log('    %cset width -- ' + (this.getEl().outerWidth()  + 1) + 'px -- ' + this.cls, 'background: #2196F3; color: white');
 				this.getEl().css({ width:  this.getEl().outerWidth()  + 1 });
 			}
 			if (this.isParentVertical()   && (this.isDynamic() || this.isFlex())) {
@@ -434,13 +434,18 @@
 						if (!(item.width || item.flex) || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
 							// if ((item.isPercent() || this.isDynamic()) /*|| (this.isDynamic && options.chainCall)*/) {
 							// 	item.getEl().css('width', '');
+							// 	console.log(['11111111111111111111111'])
 							// }
 
 							if (!item.items) {
+								item.getEl().css('position', 'fixed');
 								item.getEl().css('width', '');
 							}
 							this.itemsMap['dynamic'].push(item);	
 							var width = item.getEl().outerWidth();
+
+							item.getEl().css('position', 'absolute');
+							
 							//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 							this.calcMap.push([width, Layout.SIZE.DYNAMIC]);
 							this.sizesMap['dynamic'].push(width);
@@ -641,6 +646,10 @@
 				}
 			}
 			
+
+			//console.log($(this.getEl()).outerWidth(), $(this.getEl()).attr('style'), 'add ', this.cls, ' to ', $(el).outerWidth(), el, $(el).attr('style'));
+			
+
 			this._detached = false;
 		} else this._detached = true;
 
