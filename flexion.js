@@ -123,7 +123,7 @@
 			}
 		},
 
-		this.un = function(eventName, handler, scope) {
+		this.off = function(eventName, handler, scope) {
 			var handlers = this._eventHandlers[eventName];
 			if (!handlers) return;
 			for(var i=0; i<handlers.length; i++) {
@@ -133,7 +133,7 @@
 			}
 		},
 
-		this.fireEvent = function(eventName) {
+		this.trigger = function(eventName) {
 			if (!this._eventHandlers[eventName]) {
 			  	return; // обработчиков для события нет
 			}
