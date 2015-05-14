@@ -172,7 +172,7 @@
 			//// console.log('    %cdoLayout -- ' + this.cls, 'background: #FFC107', options);
 			options = options || {};
 			if (!options.onlyLayout) {
-				if (this._inited && this.parent && (this.sizeType == Layout.SIZE.DYNAMIC || this.isPercentItemInDynamicLayout() || this.isFlexItemInDynamicLayout()) && !options.chainCall) {			
+				if (this._constructed && this.parent && (this.sizeType == Layout.SIZE.DYNAMIC || this.isPercentItemInDynamicLayout() || this.isFlexItemInDynamicLayout()) && !options.chainCall) {			
 					this.parent.doLayout(options);
 					return;
 				}
@@ -193,7 +193,7 @@
 
 			for (var i in this.items) {
 				var item = this.items[i]; 
-				if (item._inited) {
+				if (item._constructed) {
 					item.doLayout({withoutResize: options.withoutResize, chainCall: true});
 				}
 			}
@@ -243,7 +243,7 @@
 					item.reinit(this.getEl());
 				}
 
-				if (!this._inited && this.parent && !this.parent.isFlex() && this.isFlex() && item.isFlex()) {
+				if (!this._constructed && this.parent && !this.parent.isFlex() && this.isFlex() && item.isFlex()) {
 					this.parent._doLayoutAfterInit = true;
 				}
 				this.items[i] = item;
@@ -576,11 +576,17 @@
 			}
 		}
 
-		return this.initialize(el, options);
+		return this.constructor(el, options);
 	}
 
-	Layout.prototype.initialize = function(el, options) {
+	Layout.prototype.constructor = function(el, options) {
 		//// console.log('%cinit ' + this.cls, "background: grey; border-radius: 2px; color: white;");
+		
+		if (!this._inited)  {
+			this.initialize();
+			this._inited = true;
+		}
+
 		if (!el) {
 			this._options = options;
 			this._detached = true;
@@ -678,19 +684,29 @@
 		this._heightFixed = (this.height || (this.getEl().css('height') && this.getEl().css('height') != '0px')/* || this.flex*/) ? true : false;
 		this._widthFixed  = (this.width  || (this.getEl().css('width')  && this.getEl().css('width')  != '0px')/* || this.flex*/) ? true : false;
 		this.add(this.items, {notChaining: true});
-		this._inited = true;
+		this._constructed = true;
 
 		if (this._doLayoutAfterInit) {
 			//// console.log('%cdoLayout after init -- ' + this.cls, "background: #D32F2F; border-radius: 2px; color: white;");
 			this.doLayout();
 		}
 
+		this.afterRender();
+
 		return this;
 	};
 
+	Layout.prototype.initialize = function() {
+		return;
+	};
+
+	Layout.prototype.afterRender = function() {
+		return;
+	};
+
 	Layout.prototype.reinit = function(el, options) {
-		this._inited = false;
-		this.initialize(el || this.parent && this.parent.getEl(), options || this._options || {});	
+		this._constructed = false;
+		this.constructor(el || this.parent && this.parent.getEl(), options || this._options || {});	
 	};
 
 	Layout.genId = function() {
