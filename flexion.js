@@ -155,7 +155,7 @@
 			if (!this.el) {
 				this.el = $(document.createElement('div'));
 				this.el.append(this.items ? '' : this.html);
-				if (this.cls) this.el.addClass(this.cls); 
+				if (this.className) this.el.addClass(this.className); 
 				this.el.attr('data-layoutId', this.id);
 				if (this.customId) {this.el.attr('id', this.id);}
 				this.el.css({
@@ -169,7 +169,7 @@
 		};
 
 		this.doLayout = function(options) {
-			//// console.log('    %cdoLayout -- ' + this.cls, 'background: #FFC107', options);
+			//// console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
 			options = options || {};
 			if (!options.onlyLayout) {
 				if (this._constructed && this.parent && (this.sizeType == Layout.SIZE.DYNAMIC || this.isPercentItemInDynamicLayout() || this.isFlexItemInDynamicLayout()) && !options.chainCall) {			
@@ -200,34 +200,34 @@
 		};
 
 		this.resizeDynamicContainer = function() {
-			//// console.log('    %cresizeDynamicContainer -- ' + this.cls, 'background: #FFC107');
+			//// console.log('    %cresizeDynamicContainer -- ' + this.className, 'background: #FFC107');
 			var width = 0; 	for (var i in this.sizesMap['fixed']) {
 								width += this.sizesMap['fixed'][i];
-								//// console.log('      %c' + this.itemsMap['fixed'][i].cls + ' fixed container width increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| width = ' + width + 'px', 'background: #FFCC80');	
+								//// console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container width increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| width = ' + width + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['dynamic']) {
 								width += this.sizesMap['dynamic'][i];
-								//// console.log('      %c' + this.itemsMap['dynamic'][i].cls + ' dynamic container width increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');	
+								//// console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container width increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['perc']) { 
 								var item = this.itemsMap['perc'][i];
 								width += this.itemsMap['perc'][i].getEl().width();
-								//// console.log('      %c' + this.itemsMap['perc'][i].cls + ' percent container width increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');
+								//// console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container width increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');
 							}
 							for (var i in this.sizesMap['flex']) { 
 								var item = this.itemsMap['flex'][i];
 								width += this.itemsMap['flex'][i].getEl().width();
-								//// console.log('      %c' + this.itemsMap['flex'][i].cls + ' flex container width increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');
+								//// console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container width increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');
 							}
 			
 			
 			this.getEl().css('width', width + 'px');	
-			//// console.log('        %c' + this.cls + ' container || width = ' + this.getEl().width() + 'px', 'background: #FFCC80');						
+			//// console.log('        %c' + this.className + ' container || width = ' + this.getEl().width() + 'px', 'background: #FFCC80');						
 		};
 
 		//other layouts or html
 		this.add = function(items, options) {
-			//// console.log('    add -- ' + this.cls);
+			//// console.log('    add -- ' + this.className);
 			if (!items || ($.isArray(items) && !items.length)) return;
 			this.clearData();
 			options = options || {};
@@ -267,14 +267,14 @@
 
 		this.distributeSizes = function(options) {
 
-			//// console.log('    %cdistribute_sizes -- ' + this.cls, 'background: wheat');
+			//// console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
 			options = options || {};
 			this.clearData();
 
 			/*if (this.isParentHorizontal() && (this.isDynamic() || this.isFlex())) {
 				this.getEl().css({ width: ''  })
 
-				console.log('    %cset width -- ' + (this.getEl().outerWidth()  + 1) + 'px -- ' + this.cls, 'background: #2196F3; color: white');
+				console.log('    %cset width -- ' + (this.getEl().outerWidth()  + 1) + 'px -- ' + this.className, 'background: #2196F3; color: white');
 				this.getEl().css({ width:  this.getEl().outerWidth()  + 1 });
 			}
 			if (this.isParentVertical()   && (this.isDynamic() || this.isFlex())) {
@@ -430,7 +430,7 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.distribute = function(item, options) {
-						//// console.log('        %cdistribute -- ' + this.cls + ' ' + item.cls, 'background: #43A047; color: white');
+						//// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
 						if (!(item.width || item.flex) || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
 							// if ((item.isPercent() || this.isDynamic()) /*|| (this.isDynamic && options.chainCall)*/) {
 							// 	item.getEl().css('width', '');
@@ -495,7 +495,7 @@
 							//if (wVal == 0) continue;
 
 
-							//// console.log('	%ccalculate -- ' + this.calcMap[i][1] + ' ' + item.cls + ' in ' + this.cls + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
+							//// console.log('	%ccalculate -- ' + this.calcMap[i][1] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
 							item.getEl().css({
 								width: wVal + wType,
 								left: horAnchor + 'px'
@@ -509,7 +509,7 @@
 						}
 
 
-						//// console.log('    %cSummary container (' + this.cls + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
+						//// console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
 					};
 					break;
 				}
@@ -580,7 +580,7 @@
 	}
 
 	Layout.prototype.constructor = function(el, options) {
-		//// console.log('%cinit ' + this.cls, "background: grey; border-radius: 2px; color: white;");
+		//// console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
 		
 		if (!this._inited)  {
 			this.initialize();
@@ -653,7 +653,7 @@
 			}
 			
 
-			//console.log($(this.getEl()).outerWidth(), $(this.getEl()).attr('style'), 'add ', this.cls, ' to ', $(el).outerWidth(), el, $(el).attr('style'));
+			//console.log($(this.getEl()).outerWidth(), $(this.getEl()).attr('style'), 'add ', this.className, ' to ', $(el).outerWidth(), el, $(el).attr('style'));
 			
 
 			this._detached = false;
@@ -687,7 +687,7 @@
 		this._constructed = true;
 
 		if (this._doLayoutAfterInit) {
-			//// console.log('%cdoLayout after init -- ' + this.cls, "background: #D32F2F; border-radius: 2px; color: white;");
+			//// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
 			this.doLayout();
 		}
 
