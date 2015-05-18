@@ -7,8 +7,8 @@
 
 		options = options || {};
 		this.type =		'fit'; //border, vert, hor, anchor, card, 
-		this.width = 	this.outerWidth() 	|| options.width;
-		this.height = 	this.outerHeight() 	|| options.height;
+		this.width = 	this.width() 	|| options.width;
+		this.height = 	this.height() 	|| options.height;
 		this.items = 	null 			|| options.items;
 		this.verAlign = 0				|| options.verAlign;
 		this.horAlign = 0				|| options.horAlign;
@@ -274,11 +274,11 @@
 			/*if (this.isParentHorizontal() && (this.isDynamic() || this.isFlex())) {
 				this.getEl().css({ width: ''  })
 
-				console.log('    %cset width -- ' + (this.getEl().outerWidth()  + 1) + 'px -- ' + this.className, 'background: #2196F3; color: white');
-				this.getEl().css({ width:  this.getEl().outerWidth()  + 1 });
+				console.log('    %cset width -- ' + (this.getEl().width()  + 1) + 'px -- ' + this.className, 'background: #2196F3; color: white');
+				this.getEl().css({ width:  this.getEl().width()  + 1 });
 			}
 			if (this.isParentVertical()   && (this.isDynamic() || this.isFlex())) {
-				this.getEl().css({ height: '' }).css({ height: this.getEl().outerHeight() + 1 });
+				this.getEl().css({ height: '' }).css({ height: this.getEl().height() + 1 });
 			}*/
 			this.calculateAllFlex(this.items);
 			for (var i in this.items) {
@@ -318,6 +318,9 @@
 			this._allDynamicSummary = 0;
 			this._allPercentsSummary = 0;
 			this._allFlexSummary = 0;
+			this._allPaddings = 0;
+			this._allMargins = 0;
+			this._allBorders = 0;
 
 			this.sizesMap = {
 				flex: [],
@@ -353,7 +356,7 @@
 		};
 
 		this.getHeight = function() {
-			return this.height || this.getEl().outerHeight();
+			return this.height || this.getEl().height();
 		};
 
 		this.setHeight = function(v) {
@@ -383,7 +386,7 @@
 						
 						if (!(item.height || item.flex)) {
 							this.sizesMap['dynamic'].push(item);	
-							var height = item.getEl().outerHeight();
+							var height = item.getEl().height();
 							this.calcMap.push([height, Layout.SIZE.DYNAMIC]);
 							this._allFixedSummary += height;
 
@@ -414,15 +417,15 @@
 					};
 
 					this.calculateHorizontal = function(items) {
-						var cntWidth = this.getEl().outerWidth() * this.anchor;	
+						var cntWidth = this.getEl().width() * this.anchor;	
 
 						for (var i in this.items) {
 							var item = this.items[i];
-						    if (!this.isWidthFixed() && (item.getEl().outerWidth() > this.getEl().outerWidth())) {
-								this.setWidth(item.width || item.getEl().outerWidth());
+						    if (!this.isWidthFixed() && (item.getEl().width() > this.getEl().width())) {
+								this.setWidth(item.width || item.getEl().width());
 							}
 						    item.getEl().css({
-						    	left: cntWidth - item.getEl().outerWidth() * this.anchor + 'px'
+						    	left: cntWidth - item.getEl().width() * this.anchor + 'px'
 						    });
 						}
 					}
@@ -430,6 +433,21 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.distribute = function(item, options) {
+							var paddings = {
+								lr: parseInt(item.getEl().css('padding-left')) + parseInt(item.getEl().css('padding-right')),
+								tb: parseInt(item.getEl().css('padding-top')) + parseInt(item.getEl().css('padding-bottom')),
+							};
+							var margins = {
+								lr: parseInt(item.getEl().css('margin-left')) + parseInt(item.getEl().css('margin-right')),
+								tb: parseInt(item.getEl().css('margin-top')) + parseInt(item.getEl().css('margin-bottom')),								
+							}
+							var borders = {
+								lr: parseInt(item.getEl().css('border-left-width')) + parseInt(item.getEl().css('border-right-width')),
+								tb: parseInt(item.getEl().css('border-top-width')) + parseInt(item.getEl().css('border-bottom-width')),								
+							}
+							this._allPaddings += paddings.lr;
+							this._allMargins += margins.lr;
+							this._allBorders += borders.lr;
 						//// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
 						if (!(item.width || item.flex) || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
 							// if ((item.isPercent() || this.isDynamic()) /*|| (this.isDynamic && options.chainCall)*/) {
@@ -442,20 +460,19 @@
 								item.getEl().css('width', '');
 							}
 							this.itemsMap['dynamic'].push(item);	
-							var width = item.getEl().outerWidth();
-
+							var width = item.getEl().width();
 							item.getEl().css('position', 'absolute');
-							
-							//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
-							this.calcMap.push([width, Layout.SIZE.DYNAMIC]);
+
 							this.sizesMap['dynamic'].push(width);
+							this.calcMap.push([width, Layout.SIZE.DYNAMIC, paddings.lr, margins.lr, borders.lr]);
+							
 							this._allFixedSummary += width;
 							return;
 						} else if (item.width && (typeof item.width == 'number' || item.width.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var width = parseInt(item.width);
 							//// console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
-							this.calcMap.push([width, Layout.SIZE.FIXED]);
+							this.calcMap.push([width, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(width);
 							this._allFixedSummary += width;
 							return;	
@@ -464,7 +481,7 @@
 							this.itemsMap['perc'].push(item);
 							//// console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
 							var width = parseInt(item.width);
-							this.calcMap.push([width, Layout.SIZE.PERCENT]);
+							this.calcMap.push([width, Layout.SIZE.PERCENT, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['perc'].push(width);
 							this._allPercentsSummary += width;
 							return;
@@ -474,18 +491,18 @@
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
 							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
-							this.calcMap.push([size, Layout.SIZE.FLEX]);	
+							this.calcMap.push([size, Layout.SIZE.FLEX, paddings.lr, margins.lr, borders.lr]);	
 							this.sizesMap['flex'].push(size);					
 							return;
 						}
 					};
 
 					this.calculateHorizontal = function() {
-						var cntWidth = this.getEl().outerWidth();
+						var cntWidth = this.getEl().width();
 
 						var calcWidth = this._allFixedSummary + this._allPercentsSummary/100 * cntWidth;
 						var horAnchor = 0;
-						var flexWidth = cntWidth - calcWidth;
+						var flexWidth = cntWidth - calcWidth - this._allMargins - this._allPaddings - this._allBorders;
 						for (var i in this.items) {
 							var item = this.items[i],
 								wVal = this.calcMap[i][0],
@@ -495,7 +512,7 @@
 							//if (wVal == 0) continue;
 
 
-							//// console.log('	%ccalculate -- ' + this.calcMap[i][1] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
+							//console.log('	%ccalculate -- ' + this.calcMap[i][1] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
 							item.getEl().css({
 								width: wVal + wType,
 								left: horAnchor + 'px'
@@ -505,7 +522,7 @@
 								wVal *= cntWidth/100;
 							}
 
-							horAnchor += wVal;
+							horAnchor += wVal + this.calcMap[i][2] + this.calcMap[i][3]  + this.calcMap[i][4];
 						}
 
 
@@ -525,7 +542,7 @@
 			switch(type) {
 				case Layout.TYPE.VERTICAL: {
 					this.calculateVertical = function() {
-						var cntHeight = this.getEl().outerHeight();
+						var cntHeight = this.getEl().height();
 
 						var calcHeight = this._allFixedSummary + this._allPercentsSummary/100 * cntHeight;
 						var verAnchor = 0;
@@ -554,15 +571,15 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.calculateVertical = function() {
-						var cntHeight = this.getEl().outerHeight() * this.anchor;	
+						var cntHeight = this.getEl().height() * this.anchor;	
 
 						for (var i in this.items) {
 							var item = this.items[i];
-						    if (!this.isHeightFixed() && (item.getEl().outerHeight() > this.getEl().outerHeight())) {
-								this.setHeight(item.height || item.getEl().outerHeight());
+						    if (!this.isHeightFixed() && (item.getEl().height() > this.getEl().height())) {
+								this.setHeight(item.height || item.getEl().height());
 							}
 						    item.getEl().css({
-						    	top: cntHeight - item.getEl().outerHeight() * this.anchor + 'px'
+						    	top: cntHeight - item.getEl().height() * this.anchor + 'px'
 						    });
 						}
 					}
@@ -653,7 +670,7 @@
 			}
 			
 
-			//console.log($(this.getEl()).outerWidth(), $(this.getEl()).attr('style'), 'add ', this.className, ' to ', $(el).outerWidth(), el, $(el).attr('style'));
+			//console.log($(this.getEl()).width(), $(this.getEl()).attr('style'), 'add ', this.className, ' to ', $(el).width(), el, $(el).attr('style'));
 			
 
 			this._detached = false;
