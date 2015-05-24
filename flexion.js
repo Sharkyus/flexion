@@ -305,12 +305,18 @@
 		};
 
 		this.updateVisibility = function() {
+			this.getEl().css('display', 'block');
 			if (!this.getEl().children().length) return;
+			if (!this.getEl().find('>:visible').length) {
+				this.getEl().css('display', 'none');	
+			}
+
+			/*if (!this.getEl().children().length) return;
 			if (this.getEl().find('>:visible').length) {
 				this.getEl().css('display', 'block');
 			} else {
 				this.getEl().css('display', 'none');
-			}
+			}*/
 		};
 
 		this.clearData = function() {
