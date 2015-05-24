@@ -509,7 +509,7 @@
 								wType = this.calcMap[i][1] == 1 ? '%' : 'px';
 							if (this.calcMap[i][1] == Layout.SIZE.FLEX && flexWidth > 0) wVal *= flexWidth;
 
-							//if (wVal == 0) continue;
+							if (wVal == 0) continue;
 
 
 							//console.log('	%ccalculate -- ' + this.calcMap[i][1] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
