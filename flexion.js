@@ -327,6 +327,7 @@
 			this._allPaddings = 0;
 			this._allMargins = 0;
 			this._allBorders = 0;
+			this._maxHeight = 0;
 
 			this.sizesMap = {
 				flex: [],
@@ -454,6 +455,16 @@
 							this._allPaddings += paddings.lr;
 							this._allMargins += margins.lr;
 							this._allBorders += borders.lr;
+							var itemHeight = item.getEl().height() + paddings.tb + margins.tb + borders.tb;
+							if (this._maxHeight < itemHeight) this._maxHeight = itemHeight;
+
+							var data = {
+								height: itemHeight, 
+								type: Layout.SIZE.DYNAMIC, 
+								paddings: paddings, 
+								margins: margins, 
+								borders: borders
+							};
 						//// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
 						if (!(item.width || item.flex) || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
 							// if ((item.isPercent() || this.isDynamic()) /*|| (this.isDynamic && options.chainCall)*/) {
@@ -464,13 +475,16 @@
 							if (!item.items) {
 								item.getEl().css('position', 'fixed');
 								item.getEl().css('width', '');
+								data.height = item.getEl().height() + paddings.tb + margins.tb + borders.tb;
+								if (this._maxHeight < data.height) this._maxHeight = data.height;
 							}
 							this.itemsMap['dynamic'].push(item);	
 							var width = item.getEl().width();
 							item.getEl().css('position', 'absolute');
 
 							this.sizesMap['dynamic'].push(width);
-							this.calcMap.push([width, Layout.SIZE.DYNAMIC, paddings.lr, margins.lr, borders.lr]);
+							data.width = width;
+							this.calcMap.push(data);
 							
 							this._allFixedSummary += width;
 							return;
@@ -478,8 +492,11 @@
 							this.itemsMap['fixed'].push(item);
 							var width = parseInt(item.width);
 							//// console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
-							this.calcMap.push([width, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
+							//this.calcMap.push([width, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(width);
+							
+							data.width = width;
+							this.calcMap.push(data);
 							this._allFixedSummary += width;
 							return;	
 						} else if (item.width) {
@@ -487,7 +504,8 @@
 							this.itemsMap['perc'].push(item);
 							//// console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
 							var width = parseInt(item.width);
-							this.calcMap.push([width, Layout.SIZE.PERCENT, paddings.lr, margins.lr, borders.lr]);
+							data.width = width;
+							this.calcMap.push(data);
 							this.sizesMap['perc'].push(width);
 							this._allPercentsSummary += width;
 							return;
@@ -497,7 +515,9 @@
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
 							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
-							this.calcMap.push([size, Layout.SIZE.FLEX, paddings.lr, margins.lr, borders.lr]);	
+							
+							data.width = size;
+							this.calcMap.push(data);
 							this.sizesMap['flex'].push(size);					
 							return;
 						}
@@ -511,9 +531,9 @@
 						var flexWidth = cntWidth - calcWidth - this._allMargins - this._allPaddings - this._allBorders;
 						for (var i in this.items) {
 							var item = this.items[i],
-								wVal = this.calcMap[i][0],
-								wType = this.calcMap[i][1] == 1 ? '%' : 'px';
-							if (this.calcMap[i][1] == Layout.SIZE.FLEX && flexWidth > 0) wVal *= flexWidth;
+								wVal = this.calcMap[i]['width'],
+								wType = this.calcMap[i]['type'] == 1 ? '%' : 'px';
+							if (this.calcMap[i]['type'] == Layout.SIZE.FLEX && flexWidth > 0) wVal *= flexWidth;
 
 							if (wVal == 0) continue;
 
@@ -524,11 +544,11 @@
 								left: horAnchor + 'px'
 							});
 
-							if (this.calcMap[i][1] == Layout.SIZE.PERCENT) {
+							if (this.calcMap[i]['type'] == Layout.SIZE.PERCENT) {
 								wVal *= cntWidth/100;
 							}
 
-							horAnchor += wVal + this.calcMap[i][2] + this.calcMap[i][3]  + this.calcMap[i][4];
+							horAnchor += wVal + this.calcMap[i]['paddings']['lr'] + this.calcMap[i]['margins']['lr']  + this.calcMap[i]['borders']['lr'];
 						}
 
 
@@ -577,17 +597,37 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.calculateVertical = function() {
-						var cntHeight = this.getEl().height() * this.anchor;	
+						if (!this.isHeightFixed()) {
+							this.setHeight(this._maxHeight);
+						}	
+						var cntHeight = this.getEl().height() * this.anchor;
 
 						for (var i in this.items) {
 							var item = this.items[i];
-						    if (!this.isHeightFixed() && (item.getEl().height() > this.getEl().height())) {
-								this.setHeight(item.height || item.getEl().height());
-							}
+							var data = this.calcMap[i];
+							var height = data.height/* + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']*/
+
+						   /*if (!this.isHeightFixed() && (height > this.getEl().height())) {
+								this.setHeight(height);
+							}*/
 						    item.getEl().css({
-						    	top: cntHeight - item.getEl().height() * this.anchor + 'px'
+						    	top: cntHeight - height * this.anchor + 'px'
 						    });
 						}
+
+
+						// var cntHeight = this.getEl().height() * this.anchor;	
+
+						// for (var i in this.items) {
+						// 	var item = this.items[i];
+						//     if (!this.isHeightFixed() && (item.getEl().height() > this.getEl().height())) {
+						// 		this.setHeight(item.height || item.getEl().height());
+						// 	}
+						//     item.getEl().css({
+						//     	top: cntHeight - item.getEl().height() * this.anchor + 'px'
+						//     });
+						// }
+
 					}
 					break;
 				}
