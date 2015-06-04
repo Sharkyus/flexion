@@ -169,10 +169,13 @@
 		};
 
 		this.doLayout = function(options) {
-			//// console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
+			 //// console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
 			options = options || {};
 			if (!options.onlyLayout) {
+
 				if (this._constructed && this.parent && (this.sizeType == Layout.SIZE.DYNAMIC || this.isPercentItemInDynamicLayout() || this.isFlexItemInDynamicLayout()) && !options.chainCall) {			
+					//// console.log(this.sizeType, this.isPercentItemInDynamicLayout(), this.isFlexItemInDynamicLayout())
+					 //// console.log('        %cgo to parent -- ' + this.className, 'background: grey');
 					this.parent.doLayout(options);
 					return;
 				}
@@ -180,7 +183,7 @@
 				if (!this.items || this._detached) return;
 				if (!options.withoutResize) {
 					this.distributeSizes(options);
-					if (this.isDynamic() && !options.chainCall) {
+					if (this.isDynamic() || this.isFlex() && !options.chainCall) {
 						this.resizeDynamicContainer();
 					}
 				}
@@ -200,29 +203,30 @@
 		};
 
 		this.resizeDynamicContainer = function() {
-			//// console.log('    %cresizeDynamicContainer -- ' + this.className, 'background: #FFC107');
-			var width = 0; 	for (var i in this.sizesMap['fixed']) {
-								width += this.sizesMap['fixed'][i];
-								//// console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container width increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| width = ' + width + 'px', 'background: #FFCC80');	
+			if ((this.type == Layout.TYPE.HORIZONTAL && this._widthFixed) || (this.type == Layout.TYPE.VERTICAL && this._heightFixed)) return;
+			 //// console.log('    %cresize dynamic container -- ' + this.className, 'background: #FFC107');
+			var targetProp = (this.type == Layout.TYPE.HORIZONTAL) ? 'width' : 'height';
+			var size = 0; 	for (var i in this.sizesMap['fixed']) {
+								size += this.sizesMap['fixed'][i];
+								 //// console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container ' + targetProp + ' increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['dynamic']) {
-								width += this.sizesMap['dynamic'][i];
-								//// console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container width increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');	
+								size += this.sizesMap['dynamic'][i];
+								 //// console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container '+targetProp+'  increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['perc']) { 
 								var item = this.itemsMap['perc'][i];
-								width += this.itemsMap['perc'][i].getEl().width();
-								//// console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container width increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');
+								size += this.itemsMap['perc'][i].getEl()[targetProp]();
+								 //// console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container '+targetProp+'  increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 							for (var i in this.sizesMap['flex']) { 
 								var item = this.itemsMap['flex'][i];
-								width += this.itemsMap['flex'][i].getEl().width();
-								//// console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container width increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || width = ' + width + 'px', 'background: #FFCC80');
+								size += this.itemsMap['flex'][i].getEl()[targetProp]();
+								 //// console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 			
-			
-			this.getEl().css('width', width + 'px');	
-			//// console.log('        %c' + this.className + ' container || width = ' + this.getEl().width() + 'px', 'background: #FFCC80');						
+			this.getEl().css(targetProp, size + 'px');	
+			 //// console.log('        %c' + this.className + ' container || '+targetProp+'  = ' + this.getEl()[targetProp]() + 'px', 'background: #FFCC80');						
 		};
 
 		//other layouts or html
@@ -267,7 +271,7 @@
 
 		this.distributeSizes = function(options) {
 
-			//// console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
+			 //// console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
 			options = options || {};
 			this.clearData();
 
@@ -288,7 +292,14 @@
 				if (!item.getEl().is(':visible')/* || item.isFixed()*/) {
 					this.itemsMap['fixed'].push(item);
 					this.sizesMap['fixed'].push(0);
-					this.calcMap.push([0, 0]);
+					this.calcMap.push({
+						width: 0, 
+						height: 0,
+						type: Layout.SIZE.FIXED, 
+						paddings: {lr: 0, tb: 0}, 
+						margins: {lr: 0, tb: 0}, 
+						borders: {lr: 0, tb: 0}
+					});
 					continue;
 				} 
 				if (!options.notChaining) {
@@ -298,9 +309,12 @@
 				}
 				
 				this.distribute(item, options);
-				if (this.isDynamic()) {
+				/*if (this.isDynamic()) {
 					this.resizeDynamicContainer();
-				}
+				}*/
+			}
+			if (this.isDynamic()) {
+				this.resizeDynamicContainer();
 			}
 		};
 
@@ -328,6 +342,7 @@
 			this._allMargins = 0;
 			this._allBorders = 0;
 			this._maxHeight = 0;
+			this._maxWidth = 0;
 
 			this.sizesMap = {
 				flex: [],
@@ -383,48 +398,103 @@
 		};
 
 		this.isFlexItemInDynamicLayout = function(item) {
-			return this.parent && this.parent.isFlex() && this.sizeType == Layout.SIZE.PERCENT;
+			return this.parent && this.parent.isDynamic() && this.sizeType == Layout.SIZE.FLEX;
+		};
+
+		this.isFlexItemInFlexLayout = function(item) {
+			return this.parent && this.parent.isFlex() && this.sizeType == Layout.SIZE.FLEX;
 		};
 
 		this.setHorizontalMethod = function(type) {
 			switch(type) {
 				case Layout.TYPE.VERTICAL: {
 					this.distribute = function(item) {
-						
-						if (!(item.height || item.flex)) {
-							this.sizesMap['dynamic'].push(item);	
-							var height = item.getEl().height();
-							this.calcMap.push([height, Layout.SIZE.DYNAMIC]);
-							this._allFixedSummary += height;
-
-							if (this.sizeType == Layout.SIZE.DYNAMIC) {
-								this._allDynamicSummary += height;
-								this.getEl().css('height', this._allFixedSummary + 'px');
+							var paddings = {
+								lr: parseInt(item.getEl().css('padding-left')) + parseInt(item.getEl().css('padding-right')),
+								tb: parseInt(item.getEl().css('padding-top')) + parseInt(item.getEl().css('padding-bottom')),
+							};
+							var margins = {
+								lr: parseInt(item.getEl().css('margin-left')) + parseInt(item.getEl().css('margin-right')),
+								tb: parseInt(item.getEl().css('margin-top')) + parseInt(item.getEl().css('margin-bottom')),								
 							}
+							var borders = {
+								lr: parseInt(item.getEl().css('border-left-width')) + parseInt(item.getEl().css('border-right-width')),
+								tb: parseInt(item.getEl().css('border-top-width')) + parseInt(item.getEl().css('border-bottom-width')),								
+							}
+							this._allPaddings += paddings.lr;
+							this._allMargins += margins.lr;
+							this._allBorders += borders.lr;
+							var itemWidth = item.getEl().width() + paddings.lr + margins.lr + borders.lr;
+							if (this._maxWidth < itemWidth) this._maxWidth = itemWidth;
+
+							var data = {
+								width: itemWidth, 
+								type: Layout.SIZE.DYNAMIC, 
+								paddings: paddings, 
+								margins: margins, 
+								borders: borders
+							};
+						 //// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
+						if (!(item.height || item.flex) || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
+							if (!item.items) {
+								item.getEl().css('position', 'fixed');
+								item.getEl().css('height', '');
+								data.width = item.getEl().width() + paddings.lr + margins.lr + borders.lr;
+								if (this._maxWidth < data.width) this._maxWidth = data.width;
+							}
+							this.itemsMap['dynamic'].push(item);	
+							var height = item.getEl().height();
+							item.getEl().css('position', 'absolute');
+
+							this.sizesMap['dynamic'].push(height);
+							data.height = height;
+							data.type = Layout.SIZE.DYNAMIC;
+							 //// console.log('            %cDYNAMIC -- || height = ' + height + 'px', 'color: white; background: #212121');
+							this.calcMap.push(data);
+							
+							this._allFixedSummary += height;
 							return;
 						} else if (item.height && (typeof item.height == 'number' || item.height.toString().match('px'))) {
-							this.sizesMap['fixed'].push(item);
+							this.itemsMap['fixed'].push(item);
 							var height = parseInt(item.height);
-							this.calcMap.push([height, Layout.SIZE.FIXED]);
+							 //// console.log('            %cFIXED -- || height = ' + height + 'px', 'color: white; background: #212121');
+							//this.calcMap.push([height, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
+							this.sizesMap['fixed'].push(height);
+							
+							data.height = height;
+							data.type = Layout.SIZE.FIXED;
+							this.calcMap.push(data);
 							this._allFixedSummary += height;
 							return;	
 						} else if (item.height) {
-							this.sizesMap['perc'].push(item);
+							this.itemsMap['fixed'].push(item);
+							this.itemsMap['perc'].push(item);
+							 //// console.log('            %cPERCENTS -- || height = ' + item.height, 'color: white; background: #212121');
 							var height = parseInt(item.height);
-							this.calcMap.push([height, Layout.SIZE.PERCENT]);
+							data.height = height;
+							data.type = Layout.SIZE.PERCENT;
+							this.calcMap.push(data);
+							this.sizesMap['perc'].push(height);
 							this._allPercentsSummary += height;
 							return;
 						}
 						if (item.flex) {
-							this.sizesMap['flex'].push(item);
-							this.calcMap.push([parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(5)), Layout.SIZE.FLEX]);
+							this.itemsMap['flex'].push(item);
+							item.sizeType = Layout.SIZE.PERCENT;
+							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
+							 //// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
+							data.height = size;
+							data.type = Layout.SIZE.FLEX;
+							this.calcMap.push(data);
+							this.sizesMap['flex'].push(size);					
 							return;
 						}
 					};
 
 					this.calculateHorizontal = function(items) {
-						var cntWidth = this.getEl().width() * this.anchor;	
+						//return;
+						/*var cntWidth = this.getEl().width() * this.anchor;	
 
 						for (var i in this.items) {
 							var item = this.items[i];
@@ -434,7 +504,26 @@
 						    item.getEl().css({
 						    	left: cntWidth - item.getEl().width() * this.anchor + 'px'
 						    });
+						}*/
+						if (!this.isWidthFixed()) {
+							this.setWidth(this._maxWidth);
+						}	
+						var cntWidth = this.getEl().width() * this.anchor;
+						//console.log(['!!!!!!!!!!!!!!!!!!!!!!!'], this.getEl().height());
+
+						for (var i in this.items) {
+							var item = this.items[i];
+							var data = this.calcMap[i];
+							var width = item.getEl().width()/* + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']*/
+
+						   /*if (!this.isHeightFixed() && (height > this.getEl().height())) {
+								this.setHeight(height);
+							}*/
+						    item.getEl().css({
+						    	left: cntWidth- width * this.anchor + 'px'
+						    });
 						}
+
 					}
 					break;
 				}
@@ -465,13 +554,8 @@
 								margins: margins, 
 								borders: borders
 							};
-						//// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
-						if (!(item.width || item.flex) || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
-							// if ((item.isPercent() || this.isDynamic()) /*|| (this.isDynamic && options.chainCall)*/) {
-							// 	item.getEl().css('width', '');
-							// 	console.log(['11111111111111111111111'])
-							// }
-
+						 //// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
+						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()/* || item.isFlexItemInFlexLayout()*/) {
 							if (!item.items) {
 								item.getEl().css('position', 'fixed');
 								item.getEl().css('width', '');
@@ -480,10 +564,12 @@
 							}
 							this.itemsMap['dynamic'].push(item);	
 							var width = item.getEl().width();
+							 //// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 							item.getEl().css('position', 'absolute');
 
 							this.sizesMap['dynamic'].push(width);
 							data.width = width;
+							data.type = Layout.SIZE.DYNAMIC;
 							this.calcMap.push(data);
 							
 							this._allFixedSummary += width;
@@ -491,20 +577,22 @@
 						} else if (item.width && (typeof item.width == 'number' || item.width.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var width = parseInt(item.width);
-							//// console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
+							 //// console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
 							//this.calcMap.push([width, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(width);
 							
 							data.width = width;
+							data.type = Layout.SIZE.FIXED;
 							this.calcMap.push(data);
 							this._allFixedSummary += width;
 							return;	
 						} else if (item.width) {
 							this.itemsMap['fixed'].push(item);
 							this.itemsMap['perc'].push(item);
-							//// console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
+							 //// console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
 							var width = parseInt(item.width);
 							data.width = width;
+							data.type = Layout.SIZE.PERCENT;
 							this.calcMap.push(data);
 							this.sizesMap['perc'].push(width);
 							this._allPercentsSummary += width;
@@ -514,9 +602,10 @@
 							this.itemsMap['flex'].push(item);
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
-							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
+							 //// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
 							data.width = size;
+							data.type = Layout.SIZE.FLEX;
 							this.calcMap.push(data);
 							this.sizesMap['flex'].push(size);					
 							return;
@@ -538,7 +627,7 @@
 							if (wVal == 0) continue;
 
 
-							//console.log('	%ccalculate -- ' + this.calcMap[i][1] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
+							//// console.log('	%ccalculate -- ' + this.calcMap[i]['width'] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
 							item.getEl().css({
 								width: wVal + wType,
 								left: horAnchor + 'px'
@@ -552,7 +641,7 @@
 						}
 
 
-						//// console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
+						 //// console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
 					};
 					break;
 				}
@@ -572,25 +661,25 @@
 
 						var calcHeight = this._allFixedSummary + this._allPercentsSummary/100 * cntHeight;
 						var verAnchor = 0;
-						var flexHeight = cntHeight - calcHeight;
+						var flexHeight = cntHeight - calcHeight - this._allMargins - this._allPaddings - this._allBorders;
 						for (var i in this.items) {
 							var item = this.items[i],
-								wVal = this.calcMap[i][0],
-								wType = this.calcMap[i][1] == 1 ? '%' : 'px';
-							if (this.calcMap[i][1] == Layout.SIZE.FLEX && flexHeight > 0) wVal *= flexHeight;
+								hVal = this.calcMap[i]['height'],
+								hType = this.calcMap[i]['type'] == 1 ? '%' : 'px';
+							if (this.calcMap[i]['type'] == Layout.SIZE.FLEX && flexHeight > 0) hVal *= flexHeight;
 
-							if (wVal == 0) continue;
+							if (hVal == 0) continue;
 
 							item.getEl().css({
-								height: wVal + wType,
+								height: hVal + hType,
 								top: verAnchor + 'px'
 							});
 
-							if (this.calcMap[i][1] == Layout.SIZE.PERCENT) {
-								wVal *= cntHeight/100;
+							if (this.calcMap[i]['type'] == Layout.SIZE.PERCENT) {
+								hVal *= cntHeight/100;
 							}
 
-							verAnchor += wVal;
+							verAnchor += hVal;
 						}
 					}
 					break;
@@ -601,12 +690,12 @@
 							this.setHeight(this._maxHeight);
 						}	
 						var cntHeight = this.getEl().height() * this.anchor;
+						//console.log(['!!!!!!!!!!!!!!!!!!!!!!!'], this.getEl().height());
 
 						for (var i in this.items) {
 							var item = this.items[i];
 							var data = this.calcMap[i];
-							var height = data.height/* + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']*/
-
+							var height = item.getEl().height()// + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']
 						   /*if (!this.isHeightFixed() && (height > this.getEl().height())) {
 								this.setHeight(height);
 							}*/
@@ -643,7 +732,7 @@
 	}
 
 	Layout.prototype.constructor = function(el, options) {
-		//// console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
+		 //// console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
 		
 		if (!this._inited)  {
 			this.initialize();
@@ -674,12 +763,15 @@
 		this.setLayout();
 		if (!$.fn['flexion'].map) $.fn['flexion'].map = {};
 		$.fn['flexion'].map[this.id] = this;
-
+		if (this.flex) {
+			this.sizeType = Layout.SIZE.FLEX;
+		}
 		if (el) {
 			var v = this.getEl();
 			$(el).append(v);
-			if (this.isParentHorizontal()) {
-				if (!(this.width || this.flex)) {
+			//if (this.parent) console.log(['!!!'], this.parent._dynamicFlex, this.isFlex(), this.parent.isDynamic(),  this.isFlex());
+			if (this.isParentHorizontal() || !this.parent) {
+				if (!(this.width || this.flex) || this.isDynamicFlex()) {
 					this.sizeType = Layout.SIZE.DYNAMIC;
 					this.getEl().css({
 						position: 'fixed'
@@ -696,8 +788,8 @@
 					});
 				}
 			}
-			if (this.isParentVertical()) {
-				if (!(this.height || this.flex)) {
+			if (this.isParentVertical() || !this.parent) {
+				if (!(this.height || this.flex) || this.isDynamicFlex()) {
 					this.sizeType = Layout.SIZE.DYNAMIC;
 					this.getEl().css({
 						position: 'fixed'
@@ -722,13 +814,13 @@
 			this._detached = false;
 		} else this._detached = true;
 
-		if (this.parent && this.parent.type == Layout.TYPE.HORIZONTAL && this.width) {
+		if ((this.parent && this.parent.type == Layout.TYPE.HORIZONTAL && this.width) || (!this.parent && this.width)) {
 			if (this.width && (typeof this.width == 'number' || this.width.toString().match('px'))) {
 				this.sizeType = Layout.SIZE.FIXED;		
 			} else if (this.width) {
 				this.sizeType = Layout.SIZE.PERCENT;
 			}
-		} else if (this.parent && this.parent.type == Layout.TYPE.VERTICAL && this.height) {
+		} else if ((this.parent && this.parent.type == Layout.TYPE.VERTICAL && this.height) || (!this.parent && this.height)) {
 			if (this.height && (typeof this.height == 'number' || this.height.toString().match('px'))) {
 				this.sizeType = Layout.SIZE.FIXED;
 			} else if (this.height) {
@@ -736,8 +828,8 @@
 			}
 		} 
 
-		if (this.flex) {
-			this.sizeType = Layout.SIZE.FLEX;
+		if (this.isDynamicFlex()) {
+			this._dynamicFlex = true;	
 		}
 
 		if (this.isFlex() && this.parent.isFlex()) {
@@ -746,17 +838,21 @@
 
 		this._heightFixed = (this.height || (this.getEl().css('height') && this.getEl().css('height') != '0px')/* || this.flex*/) ? true : false;
 		this._widthFixed  = (this.width  || (this.getEl().css('width')  && this.getEl().css('width')  != '0px')/* || this.flex*/) ? true : false;
+		//console.log(this._heightFixed, this._widthFixed, this.sizeType);
 		this.add(this.items, {notChaining: true});
-		this._constructed = true;
 
 		if (this._doLayoutAfterInit) {
-			//// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
+			 //// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
 			this.doLayout();
 		}
+		this._constructed = true;
 
 		this.afterRender();
-
 		return this;
+	};
+
+	Layout.prototype.isDynamicFlex = function() {
+		return this.parent && ((this.parent._dynamicFlex && this.isFlex()) || (this.parent.isDynamic() && this.isFlex()));
 	};
 
 	Layout.prototype.initialize = function() {
