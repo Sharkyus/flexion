@@ -1,4 +1,11 @@
 (function($) {
+	  $.event.special.destroy = {
+	    remove: function(o) {
+	      if (o.handler) {
+	        o.handler()
+	      }
+	    }
+	  }
 	$.fn['flexion'] = function(options) {
 		if (typeof options == 'string') {
 			var method = options;
@@ -229,16 +236,29 @@
 			 //// console.log('        %c' + this.className + ' container || '+targetProp+'  = ' + this.getEl()[targetProp]() + 'px', 'background: #FFCC80');						
 		};
 
+		this._insertItems = function(ar1, ar2, pos) {
+			var before = ar1.splice(0, pos);
+			var after = ar1;
+			var newAr = before;
+			return before.concat(ar2, after);
+		};
+
 		//other layouts or html
 		this.add = function(items, options) {
 			//// console.log('    add -- ' + this.className);
+			var self = this;
 			if (!items || ($.isArray(items) && !items.length)) return;
 			this.clearData();
 			options = options || {};
 			items = $.isArray(items) ? items : [items];
-			this.items = items;	
-			for (var i in this.items) {
-				var item = this.items[i];
+			if (!isNaN(parseInt(options.position))) {
+				this.items = this._insertItems(this.items, items, options.position);
+			} else {
+				this.items = $.merge(this.items, items);
+			}	
+			for (var i in items) {
+				var item = items[i];
+				var idx = this.items.indexOf(item);
 				if(!item.isLayout) {
 					item.parent = this;
 					item = new Layout(this.getEl(), item);
@@ -247,15 +267,50 @@
 					item.reinit(this.getEl());
 				}
 
+				item.on('destroy', function(){
+					self.items.splice(self.items.indexOf(this), 1);
+				})
+
 				if (!this._constructed && this.parent && !this.parent.isFlex() && this.isFlex() && item.isFlex()) {
 					this.parent._doLayoutAfterInit = true;
 				}
-				this.items[i] = item;
+				this.items[idx] = item;
 
 				//this.distribute(item);
 			};
 			//this.calculateAllFlex(this.items);
 
+			if (this._detached) return; 
+
+			this.doLayout(options);
+		};
+
+		this.insert = function(items, position) {
+			this.add(items, {position: position});		
+		};
+
+		this.replace = function(item, itemOrIndex) {
+			var idx = itemOrIndex; 
+			if (typeof itemOrIndex == 'object') {
+				idx = this.items.indexOf(itemOrIndex);
+			}
+			if (idx > -1) {
+				this.items[idx].remove();
+				this.insert(item, idx);
+			}
+		}
+
+		this.remove = function(items) {
+			if (!items || ($.isArray(items) && !items.length) && !this.destroyed) {
+				this.getEl().remove();
+				this.destroyed = true;
+				this.trigger('remove', this);
+			} else {
+				items = $.isArray(items) ? items : [items];
+				for (var i in items) {
+					items[i].remove();
+				}
+			}
 			if (this._detached) return; 
 
 			this.doLayout(options);
@@ -839,7 +894,9 @@
 		this._heightFixed = (this.height || (this.getEl().css('height') && this.getEl().css('height') != '0px')/* || this.flex*/) ? true : false;
 		this._widthFixed  = (this.width  || (this.getEl().css('width')  && this.getEl().css('width')  != '0px')/* || this.flex*/) ? true : false;
 		//console.log(this._heightFixed, this._widthFixed, this.sizeType);
-		this.add(this.items, {notChaining: true});
+		var items = this.items;
+		this.items = [];
+		this.add(items, {notChaining: true});
 
 		if (this._doLayoutAfterInit) {
 			 //// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
