@@ -232,7 +232,7 @@
 								 //// console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 			
-			this.getEl().css(targetProp, size + 'px');	
+			this.getEl().css(targetProp, size + this._allPaddings + this._allMargins + this._allBorders +'px');	
 			 //// console.log('        %c' + this.className + ' container || '+targetProp+'  = ' + this.getEl()[targetProp]() + 'px', 'background: #FFCC80');						
 		};
 
