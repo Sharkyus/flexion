@@ -491,7 +491,7 @@
 							};
 						 //// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
 						if (!(item.height || item.flex) || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
-							if (!item.items) {
+							if (!item.items || (item.items && !item.items.length)) {
 								item.getEl().css('position', 'fixed');
 								item.getEl().css('height', '');
 								data.width = item.getEl().width() + paddings.lr + margins.lr + borders.lr;
@@ -569,7 +569,7 @@
 						for (var i in this.items) {
 							var item = this.items[i];
 							var data = this.calcMap[i];
-							var width = item.getEl().width()/* + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']*/
+							var width = item.getEl().width() + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']
 
 						   /*if (!this.isHeightFixed() && (height > this.getEl().height())) {
 								this.setHeight(height);
@@ -611,7 +611,7 @@
 							};
 						 //// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
 						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()/* || item.isFlexItemInFlexLayout()*/) {
-							if (!item.items) {
+							if (!item.items || (item.items && !item.items.length)) {
 								item.getEl().css('position', 'fixed');
 								item.getEl().css('width', '');
 								data.height = item.getEl().height() + paddings.tb + margins.tb + borders.tb;
@@ -750,7 +750,7 @@
 						for (var i in this.items) {
 							var item = this.items[i];
 							var data = this.calcMap[i];
-							var height = item.getEl().height()// + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']
+							var height = item.getEl().height() + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']
 						   /*if (!this.isHeightFixed() && (height > this.getEl().height())) {
 								this.setHeight(height);
 							}*/
@@ -894,8 +894,11 @@
 		this._heightFixed = (this.height || (this.getEl().css('height') && this.getEl().css('height') != '0px')/* || this.flex*/) ? true : false;
 		this._widthFixed  = (this.width  || (this.getEl().css('width')  && this.getEl().css('width')  != '0px')/* || this.flex*/) ? true : false;
 		//console.log(this._heightFixed, this._widthFixed, this.sizeType);
-		var items = this.items;
+		var items = [];
+		if (this.items) 
+			items = items.concat(this.items);
 		this.items = [];
+		//console.log(items);
 		this.add(items, {notChaining: true});
 
 		if (this._doLayoutAfterInit) {
