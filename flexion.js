@@ -177,13 +177,13 @@
 		};
 
 		this.doLayout = function(options) {
-			 console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
+			//// console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
 			options = options || {};
 			if (!options.onlyLayout) {
 
 				if (this._constructed && this.parent && (this.sizeType == Layout.SIZE.DYNAMIC || this.isPercentItemInDynamicLayout() || this.isFlexItemInDynamicLayout()) && !options.chainCall) {			
 					//// console.log(this.sizeType, this.isPercentItemInDynamicLayout(), this.isFlexItemInDynamicLayout())
-					 console.log('        %cgo to parent -- ' + this.parent.className, 'background: grey');
+					//// console.log('        %cgo to parent -- ' + this.parent.className, 'background: grey');
 					this.parent.doLayout(options);
 					return;
 				}
@@ -216,28 +216,28 @@
 
 		this.resizeDynamicContainer = function() {
 			console.trace();
-			 console.log('    %cresize dynamic container -- ' + this.className, 'background: #FFC107');
+			//// console.log('    %cresize dynamic container -- ' + this.className, 'background: #FFC107');
 			switch(this.type) {
 				case Layout.TYPE.HORIZONTAL: case Layout.TYPE.VERTICAL: {
 					if ((this.type == Layout.TYPE.HORIZONTAL && this._widthFixed) || (this.type == Layout.TYPE.VERTICAL && this._heightFixed)) return;
 					var targetProp = (this.type == Layout.TYPE.HORIZONTAL) ? 'width' : 'height';
 					var size = 0; 	for (var i in this.sizesMap['fixed']) {
 								size += this.sizesMap['fixed'][i];
-								 console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container ' + targetProp + ' increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
+								//// console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container ' + targetProp + ' increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['dynamic']) {
 								size += this.sizesMap['dynamic'][i];
-								 console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container '+targetProp+'  increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
+								//// console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container '+targetProp+'  increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['perc']) { 
 								var item = this.itemsMap['perc'][i];
 								size += this.itemsMap['perc'][i].getEl()[targetProp]();
-								 console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container '+targetProp+'  increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
+								//// console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container '+targetProp+'  increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 							for (var i in this.sizesMap['flex']) { 
 								var item = this.itemsMap['flex'][i];
 								size += this.itemsMap['flex'][i].getEl()[targetProp]();
-								 console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
+								//// console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 			
 							this.getEl().css(targetProp, size + this._allPaddings + this._allMargins + this._allBorders +'px');	
@@ -380,7 +380,7 @@
 
 		this.distributeSizes = function(options) {
 
-			 console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
+			//// console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
 			options = options || {};
 			this.clearData();
 
@@ -548,7 +548,7 @@
 								margins: margins, 
 								borders: borders
 							};
-						 console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
+						//// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
 						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
 							if (!item.items || (item.items && !item.items.length)) {
 								item.getEl().css('position', 'fixed');
@@ -563,7 +563,7 @@
 							this.sizesMap['dynamic'].push(height);
 							data.height = height;
 							data.type = Layout.SIZE.DYNAMIC;
-							 console.log('            %cDYNAMIC -- || height = ' + height + 'px', 'color: white; background: #212121');
+							//// console.log('            %cDYNAMIC -- || height = ' + height + 'px', 'color: white; background: #212121');
 							this.calcMap.push(data);
 							
 							this._allFixedSummary += height;
@@ -571,7 +571,7 @@
 						} else if (item.height && (typeof item.height == 'number' || item.height.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var height = parseInt(item.height);
-							 console.log('            %cFIXED -- || height = ' + height + 'px', 'color: white; background: #212121');
+							//// console.log('            %cFIXED -- || height = ' + height + 'px', 'color: white; background: #212121');
 							//this.calcMap.push([height, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(height);
 							
@@ -583,7 +583,7 @@
 						} else if (item.height) {
 							this.itemsMap['fixed'].push(item);
 							this.itemsMap['perc'].push(item);
-							 console.log('            %cPERCENTS -- || height = ' + item.height, 'color: white; background: #212121');
+							//// console.log('            %cPERCENTS -- || height = ' + item.height, 'color: white; background: #212121');
 							var height = parseInt(item.height);
 							data.height = height;
 							data.type = Layout.SIZE.PERCENT;
@@ -596,7 +596,7 @@
 							this.itemsMap['flex'].push(item);
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
-							 console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
+							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
 							data.height = size;
 							data.type = Layout.SIZE.FLEX;
@@ -668,7 +668,7 @@
 								margins: margins, 
 								borders: borders
 							};
-						 console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
+						//// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
 						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()/* || item.isFlexItemInFlexLayout()*/) {
 							if (!item.items || (item.items && !item.items.length)) {
 								item.getEl().css('position', 'fixed');
@@ -678,7 +678,7 @@
 							}
 							this.itemsMap['dynamic'].push(item);	
 							var width = item.getEl().width();
-							 console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
+							//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 							item.getEl().css('position', 'absolute');
 
 							this.sizesMap['dynamic'].push(width);
@@ -691,7 +691,7 @@
 						} else if (item.width && (typeof item.width == 'number' || item.width.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var width = parseInt(item.width);
-							 console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
+							//// console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
 							//this.calcMap.push([width, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(width);
 							
@@ -703,7 +703,7 @@
 						} else if (item.width) {
 							this.itemsMap['fixed'].push(item);
 							this.itemsMap['perc'].push(item);
-							 console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
+							//// console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
 							var width = parseInt(item.width);
 							data.width = width;
 							data.type = Layout.SIZE.PERCENT;
@@ -716,7 +716,7 @@
 							this.itemsMap['flex'].push(item);
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
-							 console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
+							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
 							data.width = size;
 							data.type = Layout.SIZE.FLEX;
@@ -755,7 +755,7 @@
 						}
 
 
-						 console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
+						//// console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
 					};
 					break;
 				}
@@ -788,9 +788,7 @@
 							margins: margins, 
 							borders: borders
 						};
-						 console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
-						 console.log(item.isDynamic(), item.isPercentItemInDynamicLayout(), item.isFlexItemInDynamicLayout())
-						 console.log(item.sizeType);
+						//// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
 
 						if (!item.items || (item.items && !item.items.length)) {
 							item.getEl().css('position', 'fixed');
@@ -800,7 +798,7 @@
 						}
 						this.itemsMap['dynamic'].push(item);	
 						var width = item.getEl().width();
-						 console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
+						//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 						item.getEl().css('position', 'absolute');
 
 						this.sizesMap['dynamic'].push(width);
@@ -930,7 +928,7 @@
 	}
 
 	Layout.prototype.constructor = function(el, options) {
-		 console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
+		//// console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
 		
 		if (!this._inited)  {
 			this.initialize();
@@ -1005,7 +1003,8 @@
 				}
 			}
 			
-			if (this.isParentCard() || !this.parent) {
+			//TODO: revise a job provided if (this.isParentCard() || !this.parent) 
+			if (this.isParentCard()) {
 				this.sizeType = Layout.SIZE.DYNAMIC;
 				this.getEl().css({
 					position: 'fixed'
@@ -1061,7 +1060,7 @@
 		this.add(items, {notChaining: true});
 
 		if (this._doLayoutAfterInit) {
-			 console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
+			//// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
 			this.doLayout();
 		}
 		this._constructed = true;
