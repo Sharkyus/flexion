@@ -167,7 +167,7 @@
 				if (this.customId) {this.el.attr('id', this.id);}
 				this.el.css({
 					position: 'absolute',
-					overflow: 'hidden',
+					//overflow: 'hidden',
 					height: this.height,
 					width: this.width
 				});
@@ -177,13 +177,11 @@
 		};
 
 		this.doLayout = function(options) {
-			//// console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
+			console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
 			options = options || {};
 			if (!options.onlyLayout) {
-
 				if (this._constructed && this.parent && (this.sizeType == Layout.SIZE.DYNAMIC || this.isPercentItemInDynamicLayout() || this.isFlexItemInDynamicLayout()) && !options.chainCall) {			
-					//// console.log(this.sizeType, this.isPercentItemInDynamicLayout(), this.isFlexItemInDynamicLayout())
-					//// console.log('        %cgo to parent -- ' + this.parent.className, 'background: grey');
+					console.log('        %cgo to parent -- ' + this.parent.className, 'background: grey');
 					this.parent.doLayout(options);
 					return;
 				}
@@ -215,32 +213,33 @@
 		};
 
 		this.resizeDynamicContainer = function() {
-			//// console.log('    %cresize dynamic container -- ' + this.className, 'background: #FFC107');
+			console.log('    %cresize dynamic container -- ' + this.className, 'background: #FFC107');
 			switch(this.type) {
 				case Layout.TYPE.HORIZONTAL: case Layout.TYPE.VERTICAL: {
+					console.log(this.type == Layout.TYPE.HORIZONTAL, this._widthFixed, this.type == Layout.TYPE.VERTICAL, this._heightFixed)
 					if ((this.type == Layout.TYPE.HORIZONTAL && this._widthFixed) || (this.type == Layout.TYPE.VERTICAL && this._heightFixed)) return;
 					var targetProp = (this.type == Layout.TYPE.HORIZONTAL) ? 'width' : 'height';
 					var size = 0; 	for (var i in this.sizesMap['fixed']) {
 								size += this.sizesMap['fixed'][i];
-								//// console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container ' + targetProp + ' increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
+								console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container ' + targetProp + ' increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['dynamic']) {
 								size += this.sizesMap['dynamic'][i];
-								//// console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container '+targetProp+'  increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
+								console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container '+targetProp+'  increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['perc']) { 
 								var item = this.itemsMap['perc'][i];
 								size += this.itemsMap['perc'][i].getEl()[targetProp]();
-								//// console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container '+targetProp+'  increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
+								console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container '+targetProp+'  increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 							for (var i in this.sizesMap['flex']) { 
 								var item = this.itemsMap['flex'][i];
 								size += this.itemsMap['flex'][i].getEl()[targetProp]();
-								//// console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
+								console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
-			
-							this.getEl().css(targetProp, size + this._allPaddings + this._allMargins + this._allBorders +'px');	
-			 			//// console.log('        %c' + this.className + ' container || '+targetProp+'  = ' + this.getEl()[targetProp]() + 'px', 'background: #FFCC80');
+
+							this.getEl().css(targetProp, size + this._allPaddings + this._allMargins + this._allBorders + this.paddings.tb + this.borders.tb +'px');	
+			 			console.log('        %c' + this.className + ' container || '+targetProp+'  = ' + this.getEl()[targetProp]() + 'px', 'background: #FFCC80');
 					break;
 				}
 				case Layout.TYPE.CARD: {
@@ -250,7 +249,7 @@
 						width: !this._widthFixed && (this.useMaxWidth ? this._maxWidth : this._activeItem.getEl().width()) + 'px',
 						height: !this._heightFixed && (this.useMaxHeight ? this._maxHeight : this._activeItem.getEl().height()) +  'px',
 					});			
-			 			//// console.log('        %c' + this.className + ' container || width = ' + this.getEl().width()+ 'px, height = ' + this.getEl().height() + 'px', 'background: #FFCC80');
+			 			console.log('        %c' + this.className + ' container || width = ' + this.getEl().width()+ 'px, height = ' + this.getEl().height() + 'px', 'background: #FFCC80');
 				}
 			}
 									
@@ -374,10 +373,11 @@
 
 		this.distributeSizes = function(options) {
 
-			//// console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
+			console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
 			options = options || {};
 			this.clearData();
 
+this.checked = true;
 			/*if (this.isParentHorizontal() && (this.isDynamic() || this.isFlex())) {
 				this.getEl().css({ width: ''  })
 
@@ -387,10 +387,12 @@
 			if (this.isParentVertical()   && (this.isDynamic() || this.isFlex())) {
 				this.getEl().css({ height: '' }).css({ height: this.getEl().height() + 1 });
 			}*/
+			this.getItemElData(this);
 			this.calculateAllFlex(this.items);
 			for (var i in this.items) {
 				var item = this.items[i]; 
 
+				
 
 				if (item.type != Layout.TYPE.CARD) {
 					item.updateVisibility();
@@ -408,11 +410,14 @@
 						continue;
 					} 
 				}
-				
+
 				if (!options.notChaining) {
 					if (item.isLayout) {
+						//alert(123);
 						item.distributeSizes();
 					}
+				} else {
+					this.getItemElData(item);
 				}
 				
 				this.distribute(item, options);
@@ -423,6 +428,29 @@
 			if (this._constructed && (this.isDynamic() || this.type == Layout.TYPE.CARD)) {
 				this.resizeDynamicContainer();
 			}
+		};
+
+		this.getItemElData = function(item) {
+			item.paddings = {
+				l: parseInt(item.getEl().css('padding-left')), r: parseInt(item.getEl().css('padding-right')),
+				t: parseInt(item.getEl().css('padding-top')),  b: parseInt(item.getEl().css('padding-bottom')),
+			} 
+			item.paddings.lr = item.paddings.l + item.paddings.r;
+			item.paddings.tb = item.paddings.t + item.paddings.b;
+
+			item.margins = {
+				l: parseInt(item.getEl().css('margin-left')), r: parseInt(item.getEl().css('margin-right')),
+				t: parseInt(item.getEl().css('margin-top')),  b: parseInt(item.getEl().css('margin-bottom')),						
+			}
+			item.margins.lr = item.margins.l + item.margins.r;
+			item.margins.tb = item.margins.t + item.margins.b;
+
+			item.borders = {
+				l: parseInt(item.getEl().css('border-left-width')), r: parseInt(item.getEl().css('border-right-width')),
+				t: parseInt(item.getEl().css('border-top-width')),  b: parseInt(item.getEl().css('border-bottom-width'))							
+			} 
+			item.borders.lr = item.borders.l + item.borders.r;
+			item.borders.tb = item.borders.t + item.borders.b;
 		};
 
 		this.updateVisibility = function() {
@@ -516,40 +544,29 @@
 			switch(type) {
 				case Layout.TYPE.VERTICAL: {
 					this.distribute = function(item) {
-							var paddings = {
-								lr: parseInt(item.getEl().css('padding-left')) + parseInt(item.getEl().css('padding-right')),
-								tb: parseInt(item.getEl().css('padding-top')) + parseInt(item.getEl().css('padding-bottom')),
-							};
-							var margins = {
-								lr: parseInt(item.getEl().css('margin-left')) + parseInt(item.getEl().css('margin-right')),
-								tb: parseInt(item.getEl().css('margin-top')) + parseInt(item.getEl().css('margin-bottom')),								
-							}
-							var borders = {
-								lr: parseInt(item.getEl().css('border-left-width')) + parseInt(item.getEl().css('border-right-width')),
-								tb: parseInt(item.getEl().css('border-top-width')) + parseInt(item.getEl().css('border-bottom-width')),								
-							} 
-							if (item.isFixed()) {paddings.tb = 0; borders.tb = 0} 
-							this._allPaddings += paddings.tb;
-							this._allMargins += margins.tb;
-							this._allBorders += borders.tb;
-							var itemWidth = item.getEl().width() + paddings.lr + margins.lr + borders.lr;
-							if (this._maxWidth < itemWidth) this._maxWidth = itemWidth;
+						var paddings = item.paddings; var margins = item.margins; var borders = item.borders;
+						if (item.isFixed()) {paddings.tb = 0; borders.tb = 0} 
+						this._allPaddings += paddings.tb;
+						this._allMargins += margins.tb;
+						this._allBorders += borders.tb;
+						var itemWidth = item.getEl().width() + paddings.lr + margins.lr + borders.lr;
+						if (this._maxWidth < itemWidth) this._maxWidth = itemWidth;
 
-							var data = {
-								width: itemWidth, 
-								type: Layout.SIZE.DYNAMIC, 
-								paddings: paddings, 
-								margins: margins, 
-								borders: borders
-							};
-						//// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
+						var data = {
+							width: itemWidth, 
+							type: Layout.SIZE.DYNAMIC, 
+							paddings: paddings, 
+							margins: margins, 
+							borders: borders
+						};
+
+						console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
 						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
 							if (!item.items || (item.items && !item.items.length)) {
 								item.getEl().css('position', 'fixed');
 								item.getEl().css('height', '');
 								item.getEl().css('width', '');
 								item.getEl().css('width', item.getEl().outerWidth());
-								
 								data.width = item.getEl().width() + paddings.lr + margins.lr + borders.lr;
 								if (this._maxWidth < data.width) this._maxWidth = data.width;
 							}
@@ -560,7 +577,7 @@
 							this.sizesMap['dynamic'].push(height);
 							data.height = height;
 							data.type = Layout.SIZE.DYNAMIC;
-							//// console.log('            %cDYNAMIC -- || height = ' + height + 'px', 'color: white; background: #212121');
+							console.log('            %cDYNAMIC -- || height = ' + height + 'px', 'color: white; background: #212121');
 							this.calcMap.push(data);
 							
 							this._allFixedSummary += height;
@@ -568,7 +585,7 @@
 						} else if (item.height && (typeof item.height == 'number' || item.height.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var height = parseInt(item.height);
-							//// console.log('            %cFIXED -- || height = ' + height + 'px', 'color: white; background: #212121');
+							console.log('            %cFIXED -- || height = ' + height + 'px', 'color: white; background: #212121');
 							//this.calcMap.push([height, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(height);
 							
@@ -580,7 +597,7 @@
 						} else if (item.height) {
 							this.itemsMap['fixed'].push(item);
 							this.itemsMap['perc'].push(item);
-							//// console.log('            %cPERCENTS -- || height = ' + item.height, 'color: white; background: #212121');
+							console.log('            %cPERCENTS -- || height = ' + item.height, 'color: white; background: #212121');
 							var height = parseInt(item.height);
 							data.height = height;
 							data.type = Layout.SIZE.PERCENT;
@@ -593,7 +610,7 @@
 							this.itemsMap['flex'].push(item);
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
-							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
+							console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
 							data.height = size;
 							data.type = Layout.SIZE.FLEX;
@@ -631,7 +648,7 @@
 								this.setHeight(height);
 							}*/
 						    item.getEl().css({
-						    	left: cntWidth- width * this.anchor + 'px'
+						    	left: cntWidth- width * this.anchor + this.paddings.l + 'px'
 						    });
 						}
 
@@ -640,33 +657,23 @@
 				}
 				case Layout.TYPE.HORIZONTAL: {
 					this.distribute = function(item, options) {
-							var paddings = {
-								lr: parseInt(item.getEl().css('padding-left')) + parseInt(item.getEl().css('padding-right')),
-								tb: parseInt(item.getEl().css('padding-top')) + parseInt(item.getEl().css('padding-bottom')),
-							};
-							var margins = {
-								lr: parseInt(item.getEl().css('margin-left')) + parseInt(item.getEl().css('margin-right')),
-								tb: parseInt(item.getEl().css('margin-top')) + parseInt(item.getEl().css('margin-bottom')),								
-							}
-							var borders = {
-								lr: parseInt(item.getEl().css('border-left-width')) + parseInt(item.getEl().css('border-right-width')),
-								tb: parseInt(item.getEl().css('border-top-width')) + parseInt(item.getEl().css('border-bottom-width')),								
-							}
-							if (item.isFixed()) {paddings.lr = 0; borders.lr = 0} 
-							this._allPaddings += paddings.lr;
-							this._allMargins += margins.lr;
-							this._allBorders += borders.lr;
-							var itemHeight = item.getEl().height() + paddings.tb + margins.tb + borders.tb;
-							if (this._maxHeight < itemHeight) this._maxHeight = itemHeight;
+						var paddings = item.paddings; var margins = item.margins; var borders = item.borders;
+						if (item.isFixed()) {paddings.lr = 0; borders.lr = 0} 
+						this._allPaddings += paddings.lr;
+						this._allMargins += margins.lr;
+						this._allBorders += borders.lr;
+						var itemHeight = item.getEl().height() + paddings.tb + margins.tb + borders.tb;
+						if (this._maxHeight < itemHeight) this._maxHeight = itemHeight;
 
-							var data = {
-								height: itemHeight, 
-								type: Layout.SIZE.DYNAMIC, 
-								paddings: paddings, 
-								margins: margins, 
-								borders: paddings
-							};
-						//// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
+						var data = {
+							height: itemHeight, 
+							type: Layout.SIZE.DYNAMIC, 
+							paddings: paddings, 
+							margins: margins, 
+							borders: paddings
+						};
+
+						console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
 						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()/* || item.isFlexItemInFlexLayout()*/) {
 							if (!item.items || (item.items && !item.items.length)) {
 								item.getEl().css('position', 'fixed');
@@ -674,12 +681,16 @@
 								item.getEl().css('height', '');
 								item.getEl().css('height', item.getEl().outerHeight());
 
+								if (item.className == 'google-maps-header') {
+									console.trace();
+									console.log(item.getEl().outerHeight(), paddings.tb, margins.tb, borders.tb);
+								}
 								data.height = item.getEl().height() + paddings.tb + margins.tb + borders.tb;
 								if (this._maxHeight < data.height) this._maxHeight = data.height;
 							}
 							this.itemsMap['dynamic'].push(item);	
 							var width = item.getEl().outerWidth();
-							//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
+							console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 							item.getEl().css('position', 'absolute');
 
 							this.sizesMap['dynamic'].push(width);
@@ -692,7 +703,7 @@
 						} else if (item.width && (typeof item.width == 'number' || item.width.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var width = parseInt(item.width);
-							//// console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
+							console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
 							//this.calcMap.push([width, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(width);
 							
@@ -704,7 +715,7 @@
 						} else if (item.width) {
 							this.itemsMap['fixed'].push(item);
 							this.itemsMap['perc'].push(item);
-							//// console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
+							console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
 							var width = parseInt(item.width);
 							data.width = width;
 							data.type = Layout.SIZE.PERCENT;
@@ -717,7 +728,7 @@
 							this.itemsMap['flex'].push(item);
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
-							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
+							console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
 							data.width = size;
 							data.type = Layout.SIZE.FLEX;
@@ -742,10 +753,10 @@
 							if (wVal == 0) continue;
 
 
-							//// console.log('	%ccalculate -- ' + this.calcMap[i]['width'] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
+							console.log('	%ccalculate -- ' + this.calcMap[i]['width'] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
 							item.getEl().css({
 								width: wVal + wType,
-								left: horAnchor + 'px'
+								left: horAnchor + this.paddings.l + 'px'
 							});
 
 							if (this.calcMap[i]['type'] == Layout.SIZE.PERCENT) {
@@ -756,25 +767,14 @@
 						}
 
 
-						//// console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
+						console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
 					};
 					break;
 				}
 				case Layout.TYPE.CARD: {
 					this.distribute = function(item, options) {
 						item.getEl().css('display','');
-						var paddings = {
-							lr: parseInt(item.getEl().css('padding-left')) + parseInt(item.getEl().css('padding-right')),
-							tb: parseInt(item.getEl().css('padding-top')) + parseInt(item.getEl().css('padding-bottom')),
-						};
-						var margins = {
-							lr: parseInt(item.getEl().css('margin-left')) + parseInt(item.getEl().css('margin-right')),
-							tb: parseInt(item.getEl().css('margin-top')) + parseInt(item.getEl().css('margin-bottom')),								
-						}
-						var borders = {
-							lr: parseInt(item.getEl().css('border-left-width')) + parseInt(item.getEl().css('border-right-width')),
-							tb: parseInt(item.getEl().css('border-top-width')) + parseInt(item.getEl().css('border-bottom-width')),								
-						}
+						var paddings = item.paddings; var margins = item.margins; var borders = item.borders;
 						this._allPaddings += paddings.lr;
 						this._allMargins += margins.lr;
 						this._allBorders += borders.lr;
@@ -788,7 +788,8 @@
 							margins: margins, 
 							borders: borders
 						};
-						//// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
+
+						console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
 
 						if (!item.items || (item.items && !item.items.length)) {
 							item.getEl().css('position', 'fixed');
@@ -798,7 +799,7 @@
 						}
 						this.itemsMap['dynamic'].push(item);	
 						var width = item.getEl().width();
-						//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
+						console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 						item.getEl().css('position', 'absolute');
 
 						this.sizesMap['dynamic'].push(width);
@@ -855,7 +856,7 @@
 
 							item.getEl().css({
 								height: hVal + hType,
-								top: verAnchor + 'px'
+								top: verAnchor + this.paddings.t + 'px'
 							});
 
 							if (this.calcMap[i]['type'] == Layout.SIZE.PERCENT) {
@@ -883,7 +884,7 @@
 								this.setHeight(height);
 							}*/
 						    item.getEl().css({
-						    	top: cntHeight - height * this.anchor + 'px'
+						    	top: cntHeight - height * this.anchor + this.paddings.t + 'px'
 						    });
 						}
 
@@ -928,7 +929,7 @@
 	}
 
 	Layout.prototype.constructor = function(el, options) {
-		//// console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
+		console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
 		
 		if (!this._inited)  {
 			this.initialize();
@@ -966,14 +967,29 @@
 			var v = this.getEl();
 			$(el).append(v);
 			//if (this.parent) console.log(['!!!'], this.parent._dynamicFlex, this.isFlex(), this.parent.isDynamic(),  this.isFlex());
+
+			if ((this.parent && this.parent.type == Layout.TYPE.HORIZONTAL && this.width) || (!this.parent && this.width)) {
+				if (this.width && (typeof this.width == 'number' || this.width.toString().match('px'))) {
+					this.sizeType = Layout.SIZE.FIXED;		
+				} else if (this.width) {
+					this.sizeType = Layout.SIZE.PERCENT;
+				}
+			} else if ((this.parent && this.parent.type == Layout.TYPE.VERTICAL && this.height) || (!this.parent && this.height)) {
+				if (this.height && (typeof this.height == 'number' || this.height.toString().match('px'))) {
+					this.sizeType = Layout.SIZE.FIXED;
+				} else if (this.height) {
+					this.sizeType = Layout.SIZE.PERCENT;
+				}
+			} 
+
 			if (this.isParentHorizontal() || !this.parent) {
 				if (!(this.width || this.flex) || this.isDynamicFlex()) {
 					this.sizeType = Layout.SIZE.DYNAMIC;
 					this.getEl().css({
 						position: 'fixed'
 					});
-					var w = this.getEl().outerWidth() + 'px';
-					var h = this.getEl().outerHeight() + 'px';
+					var w = this.getEl().width() + 'px';
+					var h = this.getEl().height() + 'px';
 
 					this.getEl().css({
 						position: 'absolute'
@@ -990,8 +1006,8 @@
 					this.getEl().css({
 						position: 'fixed'
 					});
-					var w = this.getEl().outerWidth() + 'px';
-					var h = this.getEl().outerHeight() + 'px';
+					var w = this.getEl().width() + 'px';
+					var h = this.getEl().height() + 'px';
 
 					this.getEl().css({
 						position: 'absolute'
@@ -1009,8 +1025,8 @@
 				this.getEl().css({
 					position: 'fixed'
 				});
-				var w = this.getEl().outerWidth() + 'px';
-				var h = this.getEl().outerHeight() + 'px';
+				var w = this.getEl().width() + 'px';
+				var h = this.getEl().height() + 'px';
 
 				this.getEl().css({
 					position: 'absolute'
@@ -1021,25 +1037,18 @@
 				});
 			}
 
+			/*if (this.height && typeof this.height == 'string' && this.height.match('%')) {
+				this.getEl().css('height', this.height);
+			}*/
+
+			//if (this.width && typeof this.width == 'string' && this.width.match('%')) {
+			//	this.getEl().css('width', parseInt(this.width)/100 * this.getEl().parent('div').width());
+			//}
 			//console.log($(this.getEl()).width(), $(this.getEl()).attr('style'), 'add ', this.className, ' to ', $(el).width(), el, $(el).attr('style'));
 			
 
 			this._detached = false;
 		} else this._detached = true;
-
-		if ((this.parent && this.parent.type == Layout.TYPE.HORIZONTAL && this.width) || (!this.parent && this.width)) {
-			if (this.width && (typeof this.width == 'number' || this.width.toString().match('px'))) {
-				this.sizeType = Layout.SIZE.FIXED;		
-			} else if (this.width) {
-				this.sizeType = Layout.SIZE.PERCENT;
-			}
-		} else if ((this.parent && this.parent.type == Layout.TYPE.VERTICAL && this.height) || (!this.parent && this.height)) {
-			if (this.height && (typeof this.height == 'number' || this.height.toString().match('px'))) {
-				this.sizeType = Layout.SIZE.FIXED;
-			} else if (this.height) {
-				this.sizeType = Layout.SIZE.PERCENT;
-			}
-		} 
 
 		if (this.isDynamicFlex()) {
 			this._dynamicFlex = true;	
@@ -1049,8 +1058,10 @@
 			this._notCalculateLayoutBeforeInit = true;
 		}
 
-		this._heightFixed = (this.height || (this.getEl().css('height') && this.getEl().css('height') != '0px')/* || this.flex*/) ? true : false;
-		this._widthFixed  = (this.width  || (this.getEl().css('width')  && this.getEl().css('width')  != '0px')/* || this.flex*/) ? true : false;
+		console.log(this.height, this.getEl().css('height'))
+
+		this._heightFixed = (this.height || (this.getEl().height())/* || this.flex*/) ? true : false;
+		this._widthFixed  = (this.width  || (this.getEl().width())/* || this.flex*/) ? true : false;
 		//console.log(this._heightFixed, this._widthFixed, this.sizeType);
 		var items = [];
 		if (this.items) 
@@ -1060,7 +1071,7 @@
 		this.add(items, {notChaining: true});
 
 		if (this._doLayoutAfterInit) {
-			//// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
+			console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
 			this.doLayout();
 		}
 		this._constructed = true;
