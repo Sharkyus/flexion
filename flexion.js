@@ -166,8 +166,8 @@
 				this.el.attr('data-layoutId', this.id);
 				if (this.customId) {this.el.attr('id', this.id);}
 				this.el.css({
+					overflow: 'hidden',
 					position: 'absolute',
-					//overflow: 'hidden',
 					height: this.height,
 					width: this.width
 				});
@@ -177,11 +177,11 @@
 		};
 
 		this.doLayout = function(options) {
-			console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
+			//// console.log('    %cdoLayout -- ' + this.className, 'background: #FFC107', options);
 			options = options || {};
 			if (!options.onlyLayout) {
 				if (this._constructed && this.parent && (this.sizeType == Layout.SIZE.DYNAMIC || this.isPercentItemInDynamicLayout() || this.isFlexItemInDynamicLayout()) && !options.chainCall) {			
-					console.log('        %cgo to parent -- ' + this.parent.className, 'background: grey');
+					//// console.log('        %cgo to parent -- ' + this.parent.className, 'background: grey');
 					this.parent.doLayout(options);
 					return;
 				}
@@ -189,7 +189,7 @@
 				if (!this.items || this._detached) return;
 				if (!options.withoutResize) {
 					this.distributeSizes(options);
-					if (this.isDynamic()/* || this.isFlex() */|| this.isCLayout() && !options.chainCall) {
+					if (this.isDynamic()/* || this.isFlex() */|| this.isCLayout() || (this.isVLayout() && !this._heightFixed) || (this.isHLayout() && !this._widthFixed) && !options.chainCall) {
 						this.resizeDynamicContainer();
 					}
 				}
@@ -207,39 +207,49 @@
 				}
 			}
 
-			if (this.type == Layout.TYPE.CARD) {
+			if (this.type == Layout.TYPE.CARD) { 
 				this.showActiveItem();
 			}
 		};
 
+		this.isPerpendicularPercent = function(item) {
+			switch(this.type) {
+				case Layout.TYPE.VERTICAL: {
+					return item.width && item.width.toString().match('%');
+				}
+				case Layout.TYPE.HORIZONTAL: {
+					return item.height && item.height.toString().match('%');
+				}
+			}
+		};
+
 		this.resizeDynamicContainer = function() {
-			console.log('    %cresize dynamic container -- ' + this.className, 'background: #FFC107');
+			//// console.log('    %cresize dynamic container -- ' + this.className, 'background: #FFC107');
 			switch(this.type) {
 				case Layout.TYPE.HORIZONTAL: case Layout.TYPE.VERTICAL: {
-					console.log(this.type == Layout.TYPE.HORIZONTAL, this._widthFixed, this.type == Layout.TYPE.VERTICAL, this._heightFixed)
 					if ((this.type == Layout.TYPE.HORIZONTAL && this._widthFixed) || (this.type == Layout.TYPE.VERTICAL && this._heightFixed)) return;
 					var targetProp = (this.type == Layout.TYPE.HORIZONTAL) ? 'width' : 'height';
 					var size = 0; 	for (var i in this.sizesMap['fixed']) {
 								size += this.sizesMap['fixed'][i];
-								console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container ' + targetProp + ' increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
+								//// console.log('      %c' + this.itemsMap['fixed'][i].className + ' fixed container ' + targetProp + ' increment on ' + this.sizesMap['fixed'][i] + 'px' + '|| '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['dynamic']) {
 								size += this.sizesMap['dynamic'][i];
-								console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container '+targetProp+'  increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
+								//// console.log('      %c' + this.itemsMap['dynamic'][i].className + ' dynamic container '+targetProp+'  increment on ' + this.sizesMap['dynamic'][i] + 'px' + ' || '+targetProp+' = ' + size + 'px', 'background: #FFCC80');	
 							}
 							for (var i in this.sizesMap['perc']) { 
 								var item = this.itemsMap['perc'][i];
 								size += this.itemsMap['perc'][i].getEl()[targetProp]();
-								console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container '+targetProp+'  increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
+								//// console.log('      %c' + this.itemsMap['perc'][i].className + ' percent container '+targetProp+'  increment on ' + this.itemsMap['perc'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 							for (var i in this.sizesMap['flex']) { 
 								var item = this.itemsMap['flex'][i];
 								size += this.itemsMap['flex'][i].getEl()[targetProp]();
-								console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
+								//// console.log('      %c' + this.itemsMap['flex'][i].className + ' flex container '+targetProp+'  increment on ' + this.itemsMap['flex'][i].getEl().width() + 'px' + ' || '+targetProp+'  = ' + size + 'px', 'background: #FFCC80');
 							}
 
 							this.getEl().css(targetProp, size + this._allPaddings + this._allMargins + this._allBorders + this.paddings.tb + this.borders.tb +'px');	
-			 			console.log('        %c' + this.className + ' container || '+targetProp+'  = ' + this.getEl()[targetProp]() + 'px', 'background: #FFCC80');
+			 			//// console.log('        %c' + this.className + ' container || '+targetProp+'  = ' + this.getEl()[targetProp]() + 'px', 'background: #FFCC80');
 					break;
 				}
 				case Layout.TYPE.CARD: {
@@ -249,7 +259,7 @@
 						width: !this._widthFixed && (this.useMaxWidth ? this._maxWidth : this._activeItem.getEl().width()) + 'px',
 						height: !this._heightFixed && (this.useMaxHeight ? this._maxHeight : this._activeItem.getEl().height()) +  'px',
 					});			
-			 			console.log('        %c' + this.className + ' container || width = ' + this.getEl().width()+ 'px, height = ' + this.getEl().height() + 'px', 'background: #FFCC80');
+			 			//// console.log('        %c' + this.className + ' container || width = ' + this.getEl().width()+ 'px, height = ' + this.getEl().height() + 'px', 'background: #FFCC80');
 				}
 			}
 									
@@ -289,7 +299,7 @@
 					self.items.splice(self.items.indexOf(this), 1);
 				})
 
-				if (!this._constructed && this.parent && !this.parent.isFlex() && this.isFlex() && item.isFlex()) {
+				if (!this._constructed && this.parent && ((!this.parent.isFlex() && this.isFlex() && item.isFlex()) || this.hasPercentSize())) {
 					this.parent._doLayoutAfterInit = true;
 				}
 				this.items[idx] = item;
@@ -371,22 +381,16 @@
 		this.isFixed   = function() { return this.sizeType == Layout.SIZE.FIXED;    };
 		this.isPercent = function() { return this.sizeType == Layout.SIZE.PERCENT;  };
 
+		this.hasPercentSize = function() {
+			return ((this.height && this.height.toString().match('%')) || (this.width && this.width.toString().match('%')));
+		}
+
 		this.distributeSizes = function(options) {
 
-			console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
+			//// console.log('    %cdistribute_sizes -- ' + this.className, 'background: wheat');
 			options = options || {};
 			this.clearData();
 
-this.checked = true;
-			/*if (this.isParentHorizontal() && (this.isDynamic() || this.isFlex())) {
-				this.getEl().css({ width: ''  })
-
-				console.log('    %cset width -- ' + (this.getEl().width()  + 1) + 'px -- ' + this.className, 'background: #2196F3; color: white');
-				this.getEl().css({ width:  this.getEl().width()  + 1 });
-			}
-			if (this.isParentVertical()   && (this.isDynamic() || this.isFlex())) {
-				this.getEl().css({ height: '' }).css({ height: this.getEl().height() + 1 });
-			}*/
 			this.getItemElData(this);
 			this.calculateAllFlex(this.items);
 			for (var i in this.items) {
@@ -413,7 +417,6 @@ this.checked = true;
 
 				if (!options.notChaining) {
 					if (item.isLayout) {
-						//alert(123);
 						item.distributeSizes();
 					}
 				} else {
@@ -540,12 +543,23 @@ this.checked = true;
 			return this.parent && this.parent.isFlex() && this.sizeType == Layout.SIZE.FLEX;
 		};
 
+		this.doResizePercentPerpendicular = function() {
+			switch(this.type) {
+				case Layout.TYPE.VERTICAL: {
+					return this.getEl().css('width', parseInt(this.width)/100 * this.getEl().parent().width());
+				}
+				case Layout.TYPE.HORIZONTAL: {
+					return this.getEl().css('height', parseInt(this.height)/100 * this.getEl().parent().height());
+				}
+			}
+		};
+
 		this.setHorizontalMethod = function(type) {
 			switch(type) {
 				case Layout.TYPE.VERTICAL: {
 					this.distribute = function(item) {
 						var paddings = item.paddings; var margins = item.margins; var borders = item.borders;
-						if (item.isFixed()) {paddings.tb = 0; borders.tb = 0} 
+						if (item.isFixed() || !this.isDynamic()) {paddings.tb = 0; borders.tb = 0} 
 						this._allPaddings += paddings.tb;
 						this._allMargins += margins.tb;
 						this._allBorders += borders.tb;
@@ -557,16 +571,20 @@ this.checked = true;
 							type: Layout.SIZE.DYNAMIC, 
 							paddings: paddings, 
 							margins: margins, 
-							borders: borders
+							borders: borders,
+							relativeAnchor: (this.isDynamic() ?  (paddings.tb + margins.tb + borders.tb) : margins.tb)
 						};
 
-						console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
+						//// console.log('        %cdistribute -- ' + this.className + ' ' + item.className, 'background: #43A047; color: white');
 						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()) {
 							if (!item.items || (item.items && !item.items.length)) {
+								
 								item.getEl().css('position', 'fixed');
 								item.getEl().css('height', '');
-								item.getEl().css('width', '');
-								item.getEl().css('width', item.getEl().outerWidth());
+								if (!this._widthFixed) {
+									item.getEl().css('width', '');
+									item.getEl().css('width', item.getEl().outerWidth() + paddings.lr + borders.lr);
+								}
 								data.width = item.getEl().width() + paddings.lr + margins.lr + borders.lr;
 								if (this._maxWidth < data.width) this._maxWidth = data.width;
 							}
@@ -577,7 +595,7 @@ this.checked = true;
 							this.sizesMap['dynamic'].push(height);
 							data.height = height;
 							data.type = Layout.SIZE.DYNAMIC;
-							console.log('            %cDYNAMIC -- || height = ' + height + 'px', 'color: white; background: #212121');
+							//// console.log('            %cDYNAMIC -- || height = ' + height + 'px', 'color: white; background: #212121');
 							this.calcMap.push(data);
 							
 							this._allFixedSummary += height;
@@ -585,7 +603,7 @@ this.checked = true;
 						} else if (item.height && (typeof item.height == 'number' || item.height.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var height = parseInt(item.height);
-							console.log('            %cFIXED -- || height = ' + height + 'px', 'color: white; background: #212121');
+							//// console.log('            %cFIXED -- || height = ' + height + 'px', 'color: white; background: #212121');
 							//this.calcMap.push([height, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(height);
 							
@@ -597,7 +615,7 @@ this.checked = true;
 						} else if (item.height) {
 							this.itemsMap['fixed'].push(item);
 							this.itemsMap['perc'].push(item);
-							console.log('            %cPERCENTS -- || height = ' + item.height, 'color: white; background: #212121');
+							//// console.log('            %cPERCENTS -- || height = ' + item.height, 'color: white; background: #212121');
 							var height = parseInt(item.height);
 							data.height = height;
 							data.type = Layout.SIZE.PERCENT;
@@ -610,7 +628,7 @@ this.checked = true;
 							this.itemsMap['flex'].push(item);
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
-							console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
+							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
 							data.height = size;
 							data.type = Layout.SIZE.FLEX;
@@ -634,14 +652,19 @@ this.checked = true;
 						    });
 						}*/
 						if (!this.isWidthFixed()) {
-							this.setWidth(this._maxWidth);
-						}	
+							this.setWidth(this._maxWidth + this.paddings.lr + this.borders.lr);
+						}
+						if (this.width && this.width.toString().match('%')) {
+							this.doResizePercentPerpendicular();
+						}
 						var cntWidth = this.getEl().width() * this.anchor;
-						//console.log(['!!!!!!!!!!!!!!!!!!!!!!!'], this.getEl().height());
 
 						for (var i in this.items) {
 							var item = this.items[i];
 							var data = this.calcMap[i];
+							if (this.isPerpendicularPercent(item)) {
+								item.doResizePercentPerpendicular();
+							}
 							var width = item.getEl().width() + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']
 
 						   /*if (!this.isHeightFixed() && (height > this.getEl().height())) {
@@ -658,7 +681,7 @@ this.checked = true;
 				case Layout.TYPE.HORIZONTAL: {
 					this.distribute = function(item, options) {
 						var paddings = item.paddings; var margins = item.margins; var borders = item.borders;
-						if (item.isFixed()) {paddings.lr = 0; borders.lr = 0} 
+						if (item.isFixed() || !this.isDynamic()) {paddings.lr = 0; borders.lr = 0} 
 						this._allPaddings += paddings.lr;
 						this._allMargins += margins.lr;
 						this._allBorders += borders.lr;
@@ -670,27 +693,26 @@ this.checked = true;
 							type: Layout.SIZE.DYNAMIC, 
 							paddings: paddings, 
 							margins: margins, 
-							borders: paddings
+							borders: paddings,
+							relativeAnchor: (this.isDynamic() ?  (paddings.lr + margins.lr + borders.lr) : margins.lr)
 						};
 
-						console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
+						//// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
 						if (item.isDynamic() || item.isPercentItemInDynamicLayout() || item.isFlexItemInDynamicLayout()/* || item.isFlexItemInFlexLayout()*/) {
 							if (!item.items || (item.items && !item.items.length)) {
 								item.getEl().css('position', 'fixed');
 								item.getEl().css('width', '');
-								item.getEl().css('height', '');
-								item.getEl().css('height', item.getEl().outerHeight());
-
-								if (item.className == 'google-maps-header') {
-									console.trace();
-									console.log(item.getEl().outerHeight(), paddings.tb, margins.tb, borders.tb);
+								if (this.isDynamic() && !this.flex) {
+									item.getEl().css('height', '');
+									item.getEl().css('height', item.getEl().outerHeight());
 								}
+
 								data.height = item.getEl().height() + paddings.tb + margins.tb + borders.tb;
 								if (this._maxHeight < data.height) this._maxHeight = data.height;
 							}
 							this.itemsMap['dynamic'].push(item);	
 							var width = item.getEl().outerWidth();
-							console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
+							//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 							item.getEl().css('position', 'absolute');
 
 							this.sizesMap['dynamic'].push(width);
@@ -703,7 +725,7 @@ this.checked = true;
 						} else if (item.width && (typeof item.width == 'number' || item.width.toString().match('px'))) {
 							this.itemsMap['fixed'].push(item);
 							var width = parseInt(item.width);
-							console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
+							//// console.log('            %cFIXED -- || width = ' + width + 'px', 'color: white; background: #212121');
 							//this.calcMap.push([width, Layout.SIZE.FIXED, paddings.lr, margins.lr, borders.lr]);
 							this.sizesMap['fixed'].push(width);
 							
@@ -715,7 +737,7 @@ this.checked = true;
 						} else if (item.width) {
 							this.itemsMap['fixed'].push(item);
 							this.itemsMap['perc'].push(item);
-							console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
+							//// console.log('            %cPERCENTS -- || width = ' + item.width, 'color: white; background: #212121');
 							var width = parseInt(item.width);
 							data.width = width;
 							data.type = Layout.SIZE.PERCENT;
@@ -728,7 +750,7 @@ this.checked = true;
 							this.itemsMap['flex'].push(item);
 							item.sizeType = Layout.SIZE.PERCENT;
 							var size = parseFloat((1 - ((this._allFlexSummary - item.flex)/this._allFlexSummary)).toFixed(10));
-							console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
+							//// console.log('            %cFLEX -- || flex size = ' + size, 'color: white; background: #212121');
 							
 							data.width = size;
 							data.type = Layout.SIZE.FLEX;
@@ -739,6 +761,9 @@ this.checked = true;
 					};
 
 					this.calculateHorizontal = function() {
+						if (this.width && this.width.toString().match('%') && this.getEl().parent().width() != 0) {
+							this.getEl().css('width', parseInt(this.width)/100 * this.getEl().parent().width());
+						}
 						var cntWidth = this.getEl().width();
 
 						var calcWidth = this._allFixedSummary + this._allPercentsSummary/100 * cntWidth;
@@ -753,7 +778,7 @@ this.checked = true;
 							if (wVal == 0) continue;
 
 
-							console.log('	%ccalculate -- ' + this.calcMap[i]['width'] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
+							//// console.log('	%ccalculate -- ' + this.calcMap[i]['width'] + ' ' + item.className + ' in ' + this.className + ' || '+ 'width = ' + (wVal + wType) + '; left = ' + (horAnchor + 'px'), 'color: white; background: #2196F3');
 							item.getEl().css({
 								width: wVal + wType,
 								left: horAnchor + this.paddings.l + 'px'
@@ -763,11 +788,11 @@ this.checked = true;
 								wVal *= cntWidth/100;
 							}
 
-							horAnchor += wVal + this.calcMap[i]['paddings']['lr'] + this.calcMap[i]['margins']['lr']  + this.calcMap[i]['borders']['lr'];
+							horAnchor += wVal + this.calcMap[i].relativeAnchor;
 						}
 
 
-						console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
+						//// console.log('    %cSummary container (' + this.className + ') width = ' + this.getEl().width() + 'px', 'color: black; background: #FFAB91');
 					};
 					break;
 				}
@@ -789,7 +814,7 @@ this.checked = true;
 							borders: borders
 						};
 
-						console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
+						//// console.log('        %cdistribute -- ' + item.className + ' of ' + this.className, 'background: #43A047; color: white');
 
 						if (!item.items || (item.items && !item.items.length)) {
 							item.getEl().css('position', 'fixed');
@@ -799,7 +824,7 @@ this.checked = true;
 						}
 						this.itemsMap['dynamic'].push(item);	
 						var width = item.getEl().width();
-						console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
+						//// console.log('            %cDYNAMIC -- || width = ' + width + 'px', 'color: white; background: #212121');
 						item.getEl().css('position', 'absolute');
 
 						this.sizesMap['dynamic'].push(width);
@@ -841,6 +866,9 @@ this.checked = true;
 			switch(type) {
 				case Layout.TYPE.VERTICAL: {
 					this.calculateVertical = function() {
+						if (this.height && this.height.toString().match('%') && this.getEl().parent().height() != 0) {
+							this.getEl().css('height', parseInt(this.height)/100 * this.getEl().parent().height());
+						}
 						var cntHeight = this.getEl().height();
 
 						var calcHeight = this._allFixedSummary + this._allPercentsSummary/100 * cntHeight;
@@ -863,7 +891,7 @@ this.checked = true;
 								hVal *= cntHeight/100;
 							}
 
-							verAnchor += hVal + this.calcMap[i]['paddings']['tb'] + this.calcMap[i]['margins']['tb']  + this.calcMap[i]['borders']['tb'];
+							verAnchor += hVal + this.calcMap[i].relativeAnchor;
 						}
 					}
 					break;
@@ -871,14 +899,20 @@ this.checked = true;
 				case Layout.TYPE.HORIZONTAL: {
 					this.calculateVertical = function() {
 						if (!this.isHeightFixed()) {
-							this.setHeight(this._maxHeight);
+							this.setHeight(this._maxHeight + this.paddings.tb + this.borders.tb);
 						}	
+
+						if (this.height && this.height.toString().match('%')) {
+							this.doResizePercentPerpendicular();
+						}
 						var cntHeight = this.getEl().height() * this.anchor;
-						//console.log(['!!!!!!!!!!!!!!!!!!!!!!!'], this.getEl().height());
 
 						for (var i in this.items) {
 							var item = this.items[i];
 							var data = this.calcMap[i];
+							if (this.isPerpendicularPercent(item)) {
+								item.doResizePercentPerpendicular();
+							}
 							var height = item.getEl().height() + data['paddings']['tb'] + data['margins']['tb']  + data['borders']['tb']
 						   /*if (!this.isHeightFixed() && (height > this.getEl().height())) {
 								this.setHeight(height);
@@ -907,7 +941,6 @@ this.checked = true;
 				case Layout.TYPE.CARD: {
 					this.calculateVertical = function() {
 						var cntHeight = this.getEl().height() * this.anchorY;
-						//console.log(['!!!!!!!!!!!!!!!!!!!!!!!'], this.getEl().height());
 
 						var idx = this.items.indexOf(this._activeItem);
 						var item = this.items[idx];
@@ -929,7 +962,7 @@ this.checked = true;
 	}
 
 	Layout.prototype.constructor = function(el, options) {
-		console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
+		//// console.log('%cinit ' + this.className, "background: grey; border-radius: 2px; color: white;");
 		
 		if (!this._inited)  {
 			this.initialize();
@@ -942,7 +975,6 @@ this.checked = true;
 			return;
 		}
 		this.anchor = this.getAnchorValue(this.anchor);
-
 		this.sizesMap = {
 			flex: [],
 			perc: [],
@@ -960,13 +992,13 @@ this.checked = true;
 		this.setLayout();
 		if (!$.fn['flexion'].map) $.fn['flexion'].map = {};
 		$.fn['flexion'].map[this.id] = this;
+		
 		if (this.flex) {
 			this.sizeType = Layout.SIZE.FLEX;
 		}
 		if (el) {
 			var v = this.getEl();
 			$(el).append(v);
-			//if (this.parent) console.log(['!!!'], this.parent._dynamicFlex, this.isFlex(), this.parent.isDynamic(),  this.isFlex());
 
 			if ((this.parent && this.parent.type == Layout.TYPE.HORIZONTAL && this.width) || (!this.parent && this.width)) {
 				if (this.width && (typeof this.width == 'number' || this.width.toString().match('px'))) {
@@ -1037,16 +1069,6 @@ this.checked = true;
 				});
 			}
 
-			/*if (this.height && typeof this.height == 'string' && this.height.match('%')) {
-				this.getEl().css('height', this.height);
-			}*/
-
-			//if (this.width && typeof this.width == 'string' && this.width.match('%')) {
-			//	this.getEl().css('width', parseInt(this.width)/100 * this.getEl().parent('div').width());
-			//}
-			//console.log($(this.getEl()).width(), $(this.getEl()).attr('style'), 'add ', this.className, ' to ', $(el).width(), el, $(el).attr('style'));
-			
-
 			this._detached = false;
 		} else this._detached = true;
 
@@ -1058,20 +1080,17 @@ this.checked = true;
 			this._notCalculateLayoutBeforeInit = true;
 		}
 
-		console.log(this.height, this.getEl().css('height'))
+		this._heightFixed = (this.height || this.getEl().height() || this.getEl().css('height').toString().match('%') || (this.parent && this.parent.isVLayout() && this.flex && !this.parent.isDynamic())) ? true : false;
+		this._widthFixed  = (this.width  || this.getEl().width() || this.getEl().css('width').toString().match('%') || (this.parent && this.parent.isHLayout() && this.flex && !this.parent.isDynamic())) ? true : false;
 
-		this._heightFixed = (this.height || (this.getEl().height())/* || this.flex*/) ? true : false;
-		this._widthFixed  = (this.width  || (this.getEl().width())/* || this.flex*/) ? true : false;
-		//console.log(this._heightFixed, this._widthFixed, this.sizeType);
 		var items = [];
 		if (this.items) 
 			items = items.concat(this.items);
 		this.items = [];
-		//console.log(items);
 		this.add(items, {notChaining: true});
 
 		if (this._doLayoutAfterInit) {
-			console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
+			//// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
 			this.doLayout();
 		}
 		this._constructed = true;
