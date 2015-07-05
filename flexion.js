@@ -166,7 +166,7 @@
 				this.el.attr('data-layoutId', this.id);
 				if (this.customId) {this.el.attr('id', this.id);}
 				this.el.css({
-					overflow: 'hidden',
+					overflow: this.overflow || 'hidden',
 					position: 'absolute',
 					height: this.height,
 					width: this.width
