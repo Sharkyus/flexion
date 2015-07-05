@@ -210,6 +210,32 @@
 			if (this.type == Layout.TYPE.CARD) { 
 				this.showActiveItem();
 			}
+
+			if (this._rootLayout) {
+				// Resize dynamic divs of flexion parent root container
+				if (!this.isRootParentHeightFixed()) {
+					this.getEl().parent().css('height', this.getEl().height());
+				}
+				if (!this.isRootParentWidthFixed()) {
+					this.getEl().parent().css('width', this.getEl().width());
+				}
+			}
+		};
+
+		this.isRootParentHeightFixed = function() {
+			var p = this.getEl().parent();	
+			var hCssRelative = !p.css('height').match('px');
+			var hCssFixed = p.css('height').match('px')
+			var hCalculated = p.height();
+			return hCssRelative ||  (hCssFixed && hCalculated != 0);
+		};
+
+		this.isRootParentWidthFixed = function() {
+			var p = this.getEl().parent();	
+			var wCssRelative = !p.css('width').match('px');
+			var wCssFixed = p.css('width').match('px')
+			var wCalculated = p.width();
+			return wCssRelative ||  (wCssFixed && wCalculated != 0);
 		};
 
 		this.isPerpendicularPercent = function(item) {
@@ -995,7 +1021,11 @@
 		
 		if (this.flex) {
 			this.sizeType = Layout.SIZE.FLEX;
-		}
+		} 
+
+		// if (this.s == 'free-offer-search-form') { 
+		// 	debugger;
+		// }
 		if (el) {
 			var v = this.getEl();
 			$(el).append(v);
@@ -1089,6 +1119,7 @@
 		this.items = [];
 		this.add(items, {notChaining: true});
 
+		
 		if (this._doLayoutAfterInit) {
 			//// console.log('%cdoLayout after init -- ' + this.className, "background: #D32F2F; border-radius: 2px; color: white;");
 			this.doLayout();
@@ -1096,6 +1127,10 @@
 		this._constructed = true;
 
 		this.afterRender();
+		if (!this.parent) {
+			this._rootLayout = true;
+			this.getEl().css('position', 'relative');
+		}
 		return this;
 	};
 
